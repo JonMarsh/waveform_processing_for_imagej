@@ -24,6 +24,13 @@
 			<name>Jon N. Marsh</name>
 		</developer>
 	</developers>
+	
+	<scm>
+		<connection>scm:git:git://github.com/jonmarsh/waveform_processing_for_imagej</connection>
+		<developerConnection>scm:git:git@github.com:jonmarsh/waveform_processing_for_imagej</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/jonmarsh/waveform_processing_for_imagej</url>
+	</scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
