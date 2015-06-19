@@ -3,4 +3,4 @@ ImageJ plugins for analyzing and processing ultrasound waveforms.  I use them fo
 
 Installation: Just add the jar file to the ImageJ plugins folder and restart ImageJ; the plugins will then be available in the Plugins menu.
 
-Note: this is a "maven-ized" replacement for my previous repository "Waveform-Analysis-for-ImageJ".
+Note: this is a "maven-ized" replacement for the "Waveform-Analysis-for-ImageJ" repository.
