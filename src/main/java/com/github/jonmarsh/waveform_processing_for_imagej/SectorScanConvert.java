@@ -39,6 +39,7 @@ public class SectorScanConvert implements ExtendedPlugInFilter
 	static int blankedLength = 50;
 	static double maxHalfAngleInDegrees = 45;
 	static boolean rotateRight = false;
+	static boolean interpolate = true;
 	static BufferedImage scanConversionIllustration;
 	static Panel panel;
 	static JLabel illustrationLabel;
@@ -103,6 +104,7 @@ public class SectorScanConvert implements ExtendedPlugInFilter
 		gd.addNumericField("Blanked_length_in_pixels", blankedLength, 0);
 		gd.addNumericField("Max_half_angle_in_degrees", maxHalfAngleInDegrees, 3);
 		gd.addCheckbox("Rotate_right_90_degrees", rotateRight);
+		gd.addCheckbox("Interpolate", interpolate);
 
 		gd.showDialog();
 		if (gd.wasCanceled()) {
@@ -113,6 +115,7 @@ public class SectorScanConvert implements ExtendedPlugInFilter
 		blankedLength = (int)gd.getNextNumber();
 		maxHalfAngleInDegrees = gd.getNextNumber();
 		rotateRight = gd.getNextBoolean();
+		interpolate = gd.getNextBoolean();
 		maxHalfAngleInRadians = Math.toRadians((double)maxHalfAngleInDegrees);
 
 		rMin = blankedLength;
@@ -154,7 +157,7 @@ public class SectorScanConvert implements ExtendedPlugInFilter
 		float[] converted_pixels;
 
 		// scan conversion of the resized image adds processing time but gives nicer results
-		ip.setInterpolationMethod(ImageProcessor.BILINEAR);
+		ip.setInterpolationMethod(interpolate ? ImageProcessor.BILINEAR : ImageProcessor.NONE);
 		resized_ip = ip.resize(convertedWidth, convertedHeight);
 		pixels = (float[])resized_ip.getPixels();
 		converted_pixels = new float[pixels.length];
@@ -166,7 +169,7 @@ public class SectorScanConvert implements ExtendedPlugInFilter
 				if ((radiusIndex < (double)convertedWidth) && (radiusIndex >= 0.0)) {
 					angleIndex = getAngleIndex(trueX, trueY, convertedHeight, maxHalfAngleInRadians);
 					if ((angleIndex < (double)convertedHeight) && (angleIndex >= 0.0)) {
-						converted_pixels[ (y*convertedWidth) + x ] = (float)resized_ip.getInterpolatedValue(radiusIndex, angleIndex);
+						converted_pixels[ (y*convertedWidth) + x ] = Float.intBitsToFloat(resized_ip.getPixelInterpolated(radiusIndex, angleIndex));
 					}
 				}
 			}
