@@ -21,7 +21,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testAddScalar_doubleArr_double()
 	{
-		System.out.println("addScalar");
+		System.out.println("Test of WaveformUtils.addScalar(double[], double)");
 		double[] a = new double[]{0.0, 1.0, -2.0};
 		double value = 1.0;
 		double[] expResult = new double[]{1.0, 2.0, -1.0};
@@ -35,13 +35,12 @@ public class WaveformUtilsTest
 	@Test
 	public void testAddScalar_floatArr_float()
 	{
-		System.out.println("addScalar");
+		System.out.println("Test of WaveformUtils.addScalar(float[], float)");
 		float[] a = new float[]{0.0f, 1.0f, -2.0f};
 		float value = 1.0F;
 		float[] expResult = new float[]{1.0f, 2.0f, -1.0f};
 		float[] result = WaveformUtils.addScalar(a, value);
 		assertArrayEquals(expResult, result, 0.0f);
-		// TODO review the generated test code and remove the default call to fail.
 	}
 
 	/**
@@ -50,7 +49,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testAddScalarInPlace_doubleArr_double()
 	{
-		System.out.println("addScalarInPlace");
+		System.out.println("Test of WaveformUtils.addScalarInPlace(double[], double)");
 		double[] a = new double[]{0.0, 1.0, -2.0};
 		double value = 1.0;
 		double[] expResult = new double[]{1.0, 2.0, -1.0};
@@ -64,7 +63,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testAddScalarInPlace_floatArr_float()
 	{
-		System.out.println("addScalarInPlace");
+		System.out.println("Test of WaveformUtils.addScalarInPlace(float[], float)");
 		float[] a = new float[]{0.0f, 1.0f, -2.0f};
 		float value = 1.0F;
 		float[] expResult = new float[]{1.0f, 2.0f, -1.0f};
@@ -78,7 +77,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testAddScalarInPlace_4args_1()
 	{
-		System.out.println("addScalarInPlace");
+		System.out.println("Test of WaveformUtils.addScalarInPlace(double[], int, int, double)");
 		double[] a = new double[]{0.0, 1.0, -2.0, -3.0, 4.0, -5.0};
 		int from = 3;
 		int to = 6;
@@ -94,7 +93,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testAddScalarInPlace_4args_2()
 	{
-		System.out.println("addScalarInPlace");
+		System.out.println("Test of WaveformUtils.addScalarInPlace(float[], int, int, float)");
 		float[] a = new float[]{0.0f, 1.0f, -2.0f, -3.0f, 4.0f, -5.0f};
 		int from = 3;
 		int to = 6;
@@ -110,7 +109,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMultiplyScalar_doubleArr_double()
 	{
-		System.out.println("multiplyScalar");
+		System.out.println("Test of WaveformUtils.multiplyScalar(double[], double)");
 		double[] a = new double[]{0.0, 1.0, -2.0};
 		double value = 1.5;
 		double[] expResult = new double[]{0.0, 1.5, -3.0};
@@ -124,7 +123,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMultiplyScalarInPlace_doubleArr_double()
 	{
-		System.out.println("multiplyScalarInPlace");
+		System.out.println("Test of WaveformUtils.multiplyScalarInPlace(double[], double)");
 		double[] a = new double[]{0.0, 1.0, -2.0};
 		double value = 1.5;
 		double[] expResult = new double[]{0.0, 1.5, -3.0};
@@ -138,7 +137,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMultiplyScalarInPlace_4args_1()
 	{
-		System.out.println("multiplyScalarInPlace");
+		System.out.println("Test of WaveformUtils.multiplyScalarInPlace(double[], int, int, double)");
 		double[] a = new double[]{0.0, 1.0, -2.0, -3.0, 4.0, -5.0};
 		int from = 3;
 		int to = 6;
@@ -154,7 +153,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMultiplyScalar_floatArr_float()
 	{
-		System.out.println("multiplyScalar");
+		System.out.println("Test of WaveformUtils.multiplyScalar(float[], float)");
 		float[] a = new float[]{0.0f, 1.0f, -2.0f, -3.0f, 4.0f, -5.0f};
 		float value = 1.5F;
 		float[] expResult = new float[]{0.0f, 1.5f, -3.0f, -4.5f, 6.0f, -7.5f};
@@ -168,7 +167,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMultiplyScalarInPlace_floatArr_float()
 	{
-		System.out.println("multiplyScalarInPlace");
+		System.out.println("Test of WaveformUtils.multiplyScalarInPlace(float[], float)");
 		float[] a = new float[]{0.0f, 1.0f, -2.0f, -3.0f, 4.0f, -5.0f};
 		float value = 1.5F;
 		WaveformUtils.multiplyScalarInPlace(a, value);
@@ -182,7 +181,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMultiplyScalarInPlace_4args_2()
 	{
-		System.out.println("multiplyScalarInPlace");
+		System.out.println("Test of WaveformUtils.multiplyScalarInPlace(float[], int, int, float)");
 		float[] a = new float[]{0.0f, 1.0f, -2.0f, -3.0f, 4.0f, -5.0f};
 		int from = 3;
 		int to = 6;
@@ -198,7 +197,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMean_3args_1()
 	{
-		System.out.println("mean");
+		System.out.println("Test of WaveformUtils.mean(double[], int, int)");
 		double[] a = new double[]{3.0, 4.0, 5.0, 6.0, 1.0, 8.0};
 		int from = 3;
 		int to = 6;
@@ -213,7 +212,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMean_doubleArr()
 	{
-		System.out.println("mean");
+		System.out.println("Test of WaveformUtils.mean(double[])");
 		double[] a = new double[]{3.0, 4.0, 5.0};
 		double expResult = 4.0;
 		double result = WaveformUtils.mean(a);
@@ -226,7 +225,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMean_3args_2()
 	{
-		System.out.println("mean");
+		System.out.println("Test of WaveformUtils.mean(float[], int, int)");
 		float[] a = new float[]{3.0f, 4.0f, 5.0f, 6.0f, 1.0f, 8.0f};
 		int from = 3;
 		int to = 6;
@@ -241,7 +240,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMean_floatArr()
 	{
-		System.out.println("mean");
+		System.out.println("Test of WaveformUtils.mean(float[])");
 		float[] a = new float[]{3.0f, 4.0f, 5.0f};
 		float expResult = 4.0F;
 		float result = WaveformUtils.mean(a);
@@ -254,7 +253,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMeanAndVariance_doubleArr_boolean()
 	{
-		System.out.println("meanAndVariance");
+		System.out.println("Test of WaveformUtils.meanAndVariance(double[], boolean)");
 		double[] a = new double[]{3.0, 4.0, 5.0};
 		boolean useUnbiasedEstimate = true;
 		double[] expResult = new double[]{4.0, 1.0};
@@ -273,7 +272,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMeanAndVariance_4args_1()
 	{
-		System.out.println("meanAndVariance");
+		System.out.println("Test of WaveformUtils.meanAndVariance(double[], boolean, int, int)");
 		double[] a = new double[]{3.0, 4.0, 5.0, 6.0, 1.0, 8.0};
 		boolean useUnbiasedEstimate = true;
 		int from = 3;
@@ -294,7 +293,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMeanAndVariance_floatArr_boolean()
 	{
-		System.out.println("meanAndVariance");
+		System.out.println("Test of WaveformUtils.meanAndVariance(float[], boolean)");
 		float[] a = new float[]{3.0f, 4.0f, 5.0f};
 		boolean useUnbiasedEstimate = true;
 		double[] expResult = new double[]{4.0, 1.0};
@@ -313,7 +312,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMeanAndVariance_4args_2()
 	{
-		System.out.println("meanAndVariance");
+		System.out.println("Test of WaveformUtils.meanAndVariance(float[], boolean, int, int)");
 		float[] a = new float[]{3.0f, 4.0f, 5.0f, 6.0f, 1.0f, 8.0f};
 		boolean useUnbiasedEstimate = true;
 		int from = 3;
@@ -334,7 +333,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMedian_doubleArr()
 	{
-		System.out.println("median");
+		System.out.println("Test of WaveformUtils.median(double[])");
 		double[] a = new double[]{1.0, 5.0, 3.0, 2.0, 2.2};
 		double expResult = 2.2;
 		double result = WaveformUtils.median(a);
@@ -357,7 +356,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMedian_3args_1()
 	{
-		System.out.println("median");
+		System.out.println("Test of WaveformUtils.median(double[], int, int)");
 		double[] a = new double[]{1.0, 5.0, 3.0, 2.0, 2.2, -1.0, 4.4, 10.0, -9.0, 5.0};
 		int from = 5;
 		int to = 10;
@@ -386,7 +385,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMedianAndSort_doubleArr()
 	{
-		System.out.println("medianAndSort");
+		System.out.println("Test of WaveformUtils.medianAndSort(double[])");
 		double[] a = new double[]{1.0, 5.0, 3.0, 2.0, 2.2};
 		double[] aSorted = Arrays.copyOf(a, a.length);
 		Arrays.sort(aSorted);
@@ -417,7 +416,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMedian_floatArr()
 	{
-		System.out.println("median");
+		System.out.println("Test of WaveformUtils.median(float[])");
 		float[] a = new float[]{1.0f, 5.0f, 3.0f, 2.0f, 2.2f};
 		float expResult = 2.2F;
 		float result = WaveformUtils.median(a);
@@ -440,7 +439,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMedian_3args_2()
 	{
-		System.out.println("median");
+		System.out.println("Test of WaveformUtils.median(float[], int, int)");
 		float[] a = new float[]{1.0f, 5.0f, 3.0f, 2.0f, 2.2f, -1.0f, 4.4f, 10.0f, -9.0f, 5.0f};
 		int from = 5;
 		int to = 10;
@@ -469,7 +468,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMedianAndSort_floatArr()
 	{
-		System.out.println("medianAndSort");
+		System.out.println("Test of WaveformUtils.medianAndSort(float[])");
 		float[] a = new float[]{1.0f, 5.0f, 3.0f, 2.0f, 2.2f};
 		float[] aSorted = Arrays.copyOf(a, a.length);
 		Arrays.sort(aSorted);
@@ -500,7 +499,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testFftComplexPowerOf2_3args()
 	{
-		System.out.println("fftComplexPowerOf2");
+		System.out.println("Test of WaveformUtils.fftComplexPowerOf2(double[], double[], boolean)");
 		double[] ar = new double[]{1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0};
 		double[] ai = new double[ar.length];
 		boolean isForward = true;
@@ -526,7 +525,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testFftComplexPowerOf2_5args()
 	{
-		System.out.println("fftComplexPowerOf2");
+		System.out.println("Test of WaveformUtils.fftComplexPowerOf2(double[], double[], int, int, boolean)");
 		double[] ar = new double[]{7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0};
 		double[] ai = new double[ar.length];
 		int from = 8;
@@ -554,7 +553,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testFftRealPowerOf2Forward()
 	{
-		System.out.println("fftRealPowerOf2Forward");
+		System.out.println("Test of WaveformUtils.fftRealPowerOf2Forward(double[], double[])");
 		double[] ar = new double[]{1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0};
 		double[] ai = new double[ar.length];
 		WaveformUtils.fftRealPowerOf2Forward(ar, ai);
@@ -592,12 +591,12 @@ public class WaveformUtilsTest
 	}	
 	
 	/**
-	 * Test of hilbertTransform method, of class WaveformUtils.
+	 * Test of fastHilbertTransform method, of class WaveformUtils.
 	 */
 	@Test
 	public void testFastHilbertTransformPowerOf2()
 	{
-		System.out.println("fastHilbertTransformPowerOf2");
+		System.out.println("Test of WaveformUtils.fastHilbertTransform(double[], boolean)");
 		double[] a = new double[]{1.0, -1.0, 2.0, -2.0, 3.0, -2.0, -1.0, 1.0};
 		WaveformUtils.fastHilbertTransformPowerOf2(a, true);
 		double[] expResult = new double[]{1.207106781186547, -1.017766952966369, 0.9142135623730954, -0.3964466094067254, -0.207106781186547, 2.517766952966369, -1.914213562373095, -1.103553390593275};
@@ -616,7 +615,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testIsPowerOf2()
 	{
-		System.out.println("isPowerOf2");
+		System.out.println("Test of WaveformUtils.isPowerOf2(int)");
 		int n = 9;
 		boolean expResult = false;
 		boolean result = WaveformUtils.isPowerOf2(n);
@@ -639,7 +638,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testAmountToPadToNextPowerOf2()
 	{
-		System.out.println("amountToPadToNextPowerOf2");
+		System.out.println("Test of WaveformUtils.amountToPadToNextPowerOf2(int)");
 		int n = 509;
 		int expResult = 3;
 		int result = WaveformUtils.amountToPadToNextPowerOf2(n);
@@ -657,7 +656,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testPadToPowerOf2_doubleArr_double()
 	{
-		System.out.println("padToPowerOf2");
+		System.out.println("Test of WaveformUtils.padToPowerOf2(double[], double)");
 		double[] a = {1.0, 5.0, 3.0, 2.0, 2.2};
 		double value = 3.3;
 		double[] expResult = {1.0, 5.0, 3.0, 2.0, 2.2, 3.3, 3.3, 3.3};
@@ -677,7 +676,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testPadMultipleWaveformsToPowerOf2_3args_1()
 	{
-		System.out.println("padMultipleWaveformsToPowerOf2");
+		System.out.println("Test of WaveformUtils.padMultipleWaveformsToPowerOf2(double[], int, double)");
 		double[] a = new double[]{1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
 		int waveformLength = 3;
 		double value = 3.3;
@@ -699,7 +698,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testPadToPowerOf2_floatArr_float()
 	{
-		System.out.println("padToPowerOf2");
+		System.out.println("Test of WaveformUtils.padToPowerOf2(float[], float)");
 		float[] a = new float[]{1.0f, 5.0f, 3.0f, 2.0f, 2.2f};
 		float value = 3.3F;
 		float[] expResult = new float[]{1.0f, 5.0f, 3.0f, 2.0f, 2.2f, 3.3f, 3.3f, 3.3f};
@@ -719,7 +718,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testPadMultipleWaveformsToPowerOf2_3args_2()
 	{
-		System.out.println("padMultipleWaveformsToPowerOf2");
+		System.out.println("Test of WaveformUtils.padMultipleWaveformsToPowerOf2(float[], int, float)");
 		float[] a = new float[]{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
 		int waveformLength = 3;
 		float value = 3.3F;
@@ -741,7 +740,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testReverseArrayInPlace_doubleArr()
 	{
-		System.out.println("reverseArrayInPlace");
+		System.out.println("Test of WaveformUtils.reverseArrayInPlace(double[])");
 		double[] a = new double[]{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
 		double[] expResult = new double[]{7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
 		WaveformUtils.reverseArrayInPlace(a);
@@ -774,7 +773,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testReverseArrayInPlace_3args_1()
 	{
-		System.out.println("reverseArrayInPlace");
+		System.out.println("Test of WaveformUtils.reverseArrayInPlace(double[], int, int)");
 		double[] a = new double[]{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
 		int from = 4;
 		int to = 8;
@@ -789,7 +788,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testReverseArrayInPlace_floatArr()
 	{
-		System.out.println("reverseArrayInPlace");
+		System.out.println("Test of WaveformUtils.reverseArrayInPlace(float[])");
 		float[] a = new float[]{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
 		float[] expResult = new float[]{7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f};
 		WaveformUtils.reverseArrayInPlace(a);
@@ -822,7 +821,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testReverseArrayInPlace_3args_2()
 	{
-		System.out.println("reverseArrayInPlace");
+		System.out.println("Test of WaveformUtils.reverseArrayInPlace(float[], int, int)");
 		float[] a = new float[]{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
 		int from = 4;
 		int to = 8;
@@ -837,7 +836,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testReverseArrayInPlace_intArr()
 	{
-		System.out.println("reverseArrayInPlace");
+		System.out.println("Test of WaveformUtils.reverseArrayInPlace(int[])");
 		int[] a = new int[]{1, 2, 3, 4, 5, 6, 7};
 		int[] expResult = new int[]{7, 6, 5, 4, 3, 2, 1};
 		WaveformUtils.reverseArrayInPlace(a);
@@ -870,7 +869,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testReverseArrayInPlace_3args_3()
 	{
-		System.out.println("reverseArrayInPlace");
+		System.out.println("Test of WaveformUtils.reverseArrayInPlace(int[], int, int)");
 		int[] a = new int[]{1, 2, 3, 4, 5, 6, 7, 8};
 		int from = 4;
 		int to = 8;
@@ -885,7 +884,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testRotateArrayInPlace_doubleArr_int()
 	{
-		System.out.println("rotateArrayInPlace");
+		System.out.println("Test of WaveformUtils.rotateArrayInPlace(double[], int)");
 		double[] a = new double[]{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
 		int n = 0;
 		double[] expResult = new double[]{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
@@ -917,7 +916,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testRotateArrayInPlace_4args_1()
 	{
-		System.out.println("rotateArrayInPlace");
+		System.out.println("Test of WaveformUtils.rotateArrayInPlace(double[], int, int, int)");
 		double[] a = new double[]{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
 		int n = 3;
 		int from = 1;
@@ -949,7 +948,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testRotateArrayInPlace_floatArr_int()
 	{
-		System.out.println("rotateArrayInPlace");
+		System.out.println("Test of WaveformUtils.rotateArrayInPlace(float[], int)");
 		float[] a = new float[]{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
 		int n = 0;
 		float[] expResult = new float[]{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
@@ -981,7 +980,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testRotateArrayInPlace_4args_2()
 	{
-		System.out.println("rotateArrayInPlace");
+		System.out.println("Test of WaveformUtils.rotateArrayInPlace(float[], int, int, int)");
 		float[] a = new float[]{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
 		int n = 3;
 		int from = 1;
@@ -1013,7 +1012,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMaxIndex_doubleArr()
 	{
-		System.out.println("maxIndex");
+		System.out.println("Test of WaveformUtils.maxIndex(double[])");
 		double[] a = new double[]{1.0, 5.0, 3.0, 2.0, 2.2};
 		int expResult = 1;
 		int result = WaveformUtils.maxIndex(a);
@@ -1037,7 +1036,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMaxIndex_floatArr()
 	{
-		System.out.println("maxIndex");
+		System.out.println("Test of WaveformUtils.maxIndex(float[])");
 		float[] a = new float[]{1.0f, 5.0f, 3.0f, 2.0f, 2.2f};
 		int expResult = 1;
 		int result = WaveformUtils.maxIndex(a);
@@ -1060,7 +1059,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMinIndex_doubleArr()
 	{
-		System.out.println("minIndex");
+		System.out.println("Test of WaveformUtils.minIndex(double[])");
 		double[] a = new double[]{1.0, 5.0, -3.0, 2.0, 2.2};
 		int expResult = 2;
 		int result = WaveformUtils.minIndex(a);
@@ -1078,7 +1077,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testMinIndex_floatArr()
 	{
-		System.out.println("minIndex");
+		System.out.println("Test of WaveformUtils.minIndex(float[])");
 		float[] a = new float[]{1.0f, 5.0f, -3.0f, 2.0f, 2.2f};
 		int expResult = 2;
 		int result = WaveformUtils.minIndex(a);
@@ -1096,7 +1095,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testCubicRoots()
 	{
-		System.out.println("cubicRoots");
+		System.out.println("Test of WaveformUtils.cubicRoots(double, double, double)");
 		double a = 0.0;
 		double b = 0.0;
 		double c = -27.0;
@@ -1104,7 +1103,6 @@ public class WaveformUtilsTest
 		double[] result = WaveformUtils.cubicRoots(a, b, c);
 		assertArrayEquals(expResult, result, Math.ulp(3.0));
 
-		System.out.println("cubicRoots");
 		a = -51.0;
 		b = 867.0;
 		c = -4913.0;
@@ -1112,7 +1110,6 @@ public class WaveformUtilsTest
 		result = WaveformUtils.cubicRoots(a, b, c);
 		assertArrayEquals(expResult, result, Math.ulp(17.0));
 
-		System.out.println("cubicRoots");
 		a = -57.0;
 		b = 1071.0;
 		c = -6647.0;
@@ -1120,7 +1117,6 @@ public class WaveformUtilsTest
 		result = WaveformUtils.cubicRoots(a, b, c);
 		assertArrayEquals(expResult, result, Math.ulp(23.0));
 
-		System.out.println("cubicRoots");
 		a = -11.0;
 		b = -493.0;
 		c = 6647.0;
@@ -1128,7 +1124,6 @@ public class WaveformUtilsTest
 		result = WaveformUtils.cubicRoots(a, b, c);
 		assertArrayEquals(expResult, result, Math.ulp(23.0));
 
-		System.out.println("cubicRoots");
 		a = -143.0;
 		b = 5087.0;
 		c = -50065.0;
@@ -1136,7 +1131,6 @@ public class WaveformUtilsTest
 		result = WaveformUtils.cubicRoots(a, b, c);
 		assertArrayEquals(expResult, result, Math.ulp(95.0));
 
-		System.out.println("cubicRoots");
 		a = 2.0;
 		b = 1.0;
 		c = 0.0;
@@ -1144,7 +1138,6 @@ public class WaveformUtilsTest
 		result = WaveformUtils.cubicRoots(a, b, c);
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
-		System.out.println("cubicRoots");
 		a = 200.0;
 		b = -0.000015;
 		c = 0.0;
@@ -1152,7 +1145,6 @@ public class WaveformUtilsTest
 		result = WaveformUtils.cubicRoots(a, b, c);
 		assertArrayEquals(expResult, result, Math.ulp(200.0));
 
-		System.out.println("cubicRoots");
 		a = 0.0;
 		b = -4.0;
 		c = 0.0;
@@ -1160,7 +1152,6 @@ public class WaveformUtilsTest
 		result = WaveformUtils.cubicRoots(a, b, c);
 		assertArrayEquals(expResult, result, Math.ulp(2.0));
 
-		System.out.println("cubicRoots");
 		a = -4.0;
 		b = 0.0;
 		c = 0.0;
@@ -1175,7 +1166,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testCubicSplineInterpolant_DoubleArgs()
 	{
-		System.out.println("cubicSplineInterpolant");
+		System.out.println("Test of WaveformUtils.cubicSplineInterpolant(double[], double[])");
 		double[] x = new double[]{0, 0.1, 0.5, 1, 2};
 		double[] y = new double[]{0, 0.3, 0.6, -0.2, 3};
 		double[] expResultA = Arrays.copyOf(y, y.length);
@@ -1195,7 +1186,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testCubicSplineInterpolant_FloatArgs()
 	{
-		System.out.println("cubicSplineInterpolant");
+		System.out.println("Test of WaveformUtils.cubicSplineInterpolant(float[], float[])");
 		float[] x = new float[]{0.0f, 0.1f, 0.5f, 1.0f, 2.0f};
 		float[] y = new float[]{0.0f, 0.3f, 0.6f, -0.2f, 3.0f};
 		double[] expResultA = new double[]{0, 0.3, 0.6, -0.2, 3};
@@ -1216,7 +1207,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testCubicSplineInterpolantUniformSpacing_DoubleArgs()
 	{
-		System.out.println("cubicSplineInterpolant");
+		System.out.println("Test of WaveformUtils.cubicSplineInterpolantUniformSpacing(double[], double)");
 		double[] y = new double[]{0, 0.3, 0.6, -0.2, 3};
 		double[] expResultA = Arrays.copyOf(y, y.length);
 		double[] expResultB = new double[]{0.15, 0.6, -0.75, 0.9, 0.0};
@@ -1236,7 +1227,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testCubicSplineInterpolantUniformSpacing_FloatArgs()
 	{
-		System.out.println("cubicSplineInterpolant");
+		System.out.println("Test of WaveformUtils.cubicSplineInterpolantUniformSpacing(float[], float)");
 		float[] y = new float[]{0.0f, 0.3f, 0.6f, -0.2f, 3.0f};
 		double[] expResultA = new double[]{0, 0.3, 0.6, -0.2, 3};
 		double[] expResultB = new double[]{0.15, 0.6, -0.75, 0.9, 0.0};
@@ -1256,7 +1247,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testCubicSplineInterpolantUniformSpacingFromTo_DoubleArgs()
 	{
-		System.out.println("cubicSplineInterpolant");
+		System.out.println("Test of WaveformUtils.cubicSplineInterpolantUniformSpacing(double[], int, int, double)");
 		double[] y = new double[]{-10.0, 0, 0.3, 0.6, -0.2, 3.0, 100.0};
 		double[] expResultA = Arrays.copyOfRange(y, 1, 6);
 		double[] expResultB = new double[]{0.15, 0.6, -0.75, 0.9, 0.0};
@@ -1276,7 +1267,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testCubicSplineInterpolantUniformSpacingFromTo_FloatArgs()
 	{
-		System.out.println("cubicSplineInterpolant");
+		System.out.println("Test of WaveformUtils.cubicSplineInterpolantUniformSpacing(float[], int, int, float)");
 		float[] y = new float[]{-10.0f, 0.0f, 0.3f, 0.6f, -0.2f, 3.0f, 100.0f};
 		double[] expResultA = new double[]{0.0f, 0.3f, 0.6f, -0.2f, 3.0f};
 		double[] expResultB = new double[]{0.15, 0.6, -0.75, 0.9, 0.0};
@@ -1296,7 +1287,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testSmoothingSplineInterpolantUniformSpacing_4args_1()
 	{
-		System.out.println("smoothingSplineInterpolantUniformSpacing");
+		System.out.println("Test of WaveformUtils.smoothingSplineInterpolantUniformSpacing(double[], double, double, double)");
 		double[] y = {1.0, 5.0, 2.0, 3.0, 4.0, 4.0, 6.0, 2.0, 1.0};
 		double standardDeviation = 0.25;
 		double dx = 1.0;
@@ -1323,7 +1314,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testSmoothingSplineInterpolantUniformSpacing_6args_1()
 	{
-		System.out.println("smoothingSplineInterpolantUniformSpacing");
+		System.out.println("Test of WaveformUtils.smoothingSplineInterpolantUniformSpacing(double[], int, int, double, double, double)");
 		double[] y = {2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 1.0, 5.0, 2.0, 3.0, 4.0, 4.0, 6.0, 2.0, 1.0};
 		int from = 8;
 		int to = 17;
@@ -1352,7 +1343,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testSmoothingSplineInterpolantUniformSpacing_4args_2()
 	{
-		System.out.println("smoothingSplineInterpolantUniformSpacing");
+		System.out.println("Test of WaveformUtils.smoothingSplineInterpolantUniformSpacing(float[], double, double, double)");
 		float[] y = {1.0f, 5.0f, 2.0f, 3.0f, 4.0f, 4.0f, 6.0f, 2.0f, 1.0f};
 		double standardDeviation = 0.25;
 		double dx = 1.0;
@@ -1379,7 +1370,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testSmoothingSplineInterpolantUniformSpacing_6args_2()
 	{
-		System.out.println("smoothingSplineInterpolantUniformSpacing");
+		System.out.println("Test of WaveformUtils.smoothingSplineInterpolantUniformSpacing(float[], int, int, double, double, double)");
 		float[] y = {2.0f, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 1.0f, 5.0f, 2.0f, 3.0f, 4.0f, 4.0f, 6.0f, 2.0f, 1.0f};
 		int from = 8;
 		int to = 17;
@@ -1407,7 +1398,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testSimpleDerivative_floatArr_float()
 	{
-		System.out.println("simpleDerivative");
+		System.out.println("Test of WaveformUtils.simpleDerivative(float[], float)");
 		float[] a = new float[]{1.0f, 5.0f, 3.0f, 2.0f, 2.2f};
 		float dx = 2.0F;
 		float[] expResult = new float[]{2.0f, 0.5f, -0.75f, -0.2f, 0.1f};
@@ -1433,7 +1424,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testSimpleDerivative_doubleArr_double()
 	{
-		System.out.println("simpleDerivative");
+		System.out.println("Test of WaveformUtils.simpleDerivative(double[], double)");
 		double[] a = new double[]{1.0, 5.0, 3.0, 2.0, 2.2};
 		double dx = 2.0;
 		double[] expResult = new double[]{2.0, 0.5, -0.75, -0.2, 0.1};
@@ -1459,7 +1450,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testWindowFunction()
 	{
-		System.out.println("windowFunction");
+		System.out.println("Test of WaveformUtils.windowFunction(WaveformUtils.WindowType, int, double, boolean)");
 		WaveformUtils.WindowType windowType = WaveformUtils.WindowType.BLACKMAN;
 		int n = 0;
 		double windowParam = 0.0;
@@ -1756,7 +1747,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testWindowFunctionSingleSided()
 	{
-		System.out.println("windowFunctionSingleSided");
+		System.out.println("Test of WaveformUtils.windowFunctionSingleSided(WaveformUtils.WindowType, int, double, boolean)");
 		WaveformUtils.WindowType windowType = WaveformUtils.WindowType.BLACKMAN;
 		int radius = 0;
 		double windowParam = 0.0;
@@ -1909,7 +1900,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testLog2()
 	{
-		System.out.println("log2");
+		System.out.println("Test of WaveformUtils.log2(double)");
 		double x = 1.0;
 		double expResult = 0.0;
 		double result = WaveformUtils.log2(x);
@@ -1932,7 +1923,7 @@ public class WaveformUtilsTest
 	@Test
 	public void testPow()
 	{
-		System.out.println("pow");
+		System.out.println("Test of WaveformUtils.pow(double, int)");
 		double a = 0.0;
 		int b = 0;
 		double expResult = 1.0;
@@ -1965,14 +1956,13 @@ public class WaveformUtilsTest
 	@Test
 	public void testQuadraticRoots()
 	{
-		System.out.println("quadraticRoots");
+		System.out.println("Test of WaveformUtils.quadraticRoots(double, double, double)");
 		
 		double a = 0.0;
 		double b = 0.0;
 		double c = 0.0;
 		double[] expResult = new double[0];
 		double[] result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 4.0;
@@ -1980,7 +1970,6 @@ public class WaveformUtilsTest
 		c = 26.0;
 		expResult = new double[0];
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 4.0;
@@ -1988,7 +1977,6 @@ public class WaveformUtilsTest
 		c = 25.0;
 		expResult = new double[]{2.5};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 4.0;
@@ -1996,7 +1984,6 @@ public class WaveformUtilsTest
 		c = 21.0;
 		expResult = new double[]{1.5, 3.5};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 4.0;
@@ -2004,7 +1991,6 @@ public class WaveformUtilsTest
 		c = 0.0;
 		expResult = new double[]{-1.75, 0.0};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 5.0;
@@ -2012,7 +1998,6 @@ public class WaveformUtilsTest
 		c = -20.0;
 		expResult = new double[]{-2.0, 2.0};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 0.0;
@@ -2020,7 +2005,6 @@ public class WaveformUtilsTest
 		c = -21.0;
 		expResult = new double[]{7.0};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 0.0;
@@ -2028,7 +2012,6 @@ public class WaveformUtilsTest
 		c = 1.0;
 		expResult = new double[0];
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 1.0;
@@ -2036,7 +2019,6 @@ public class WaveformUtilsTest
 		c = 0.0;
 		expResult = new double[]{0.0};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 1.0;
@@ -2044,7 +2026,6 @@ public class WaveformUtilsTest
 		c = -0.000015;
 		expResult = new double[]{-200.000000075, 0.000000075};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 1.0;
@@ -2052,7 +2033,6 @@ public class WaveformUtilsTest
 		c = 2.054360090947453e-8;
 		expResult = new double[]{1.149782767465722e-8, 1.786737589984535};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(2.0));
 
 		a = 94906265.625;
@@ -2060,7 +2040,6 @@ public class WaveformUtilsTest
 		c = 94906268.375;
 		expResult = new double[]{1.0, 1.000000028975958};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 
 		a = 94906266.375;
@@ -2068,7 +2047,6 @@ public class WaveformUtilsTest
 		c = 94906268.375;
 		expResult = new double[]{1.0, 1.000000021073424};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 		
 		a = 1027;
@@ -2076,7 +2054,6 @@ public class WaveformUtilsTest
 		c = 8537;
 		expResult = new double[]{2.878587715910591, 2.8877219238167706};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(3.0));
 		
 		a = 1028;
@@ -2084,7 +2061,6 @@ public class WaveformUtilsTest
 		c = 8534;
 		expResult = new double[]{2.859746037925274, 2.9028998764716136};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(3.0));
 		
 		a = 1.0;
@@ -2092,7 +2068,6 @@ public class WaveformUtilsTest
 		c = 1.0;
 		expResult = new double[]{-1.00000004472136055, -0.999999955278641450};
 		result = WaveformUtils.quadraticRoots(a, b, c);
-		System.out.println("a="+a+", b="+b+", c="+c+", expected roots: "+Arrays.toString(expResult));
 		assertArrayEquals(expResult, result, Math.ulp(1.0));
 	}
 }
