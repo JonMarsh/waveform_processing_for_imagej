@@ -87,7 +87,7 @@ public class Envelope implements ExtendedPlugInFilter, DialogListener
 	
 	/**
 	 * Computes envelope (magnitude of analytic signal) of input waveforms,
-	 * assumed to be of length {@code w} and concatenated and stored in
+	 * assumed to be of length {@code recordLength} and concatenated and stored in
 	 * one-dimensional input array {@code waveforms}. Each waveform is
 	 * zero-padded to the next largest power of 2 if necessary in order to make
 	 * use of FFTs for efficiency, and the final output is truncated to the
@@ -137,7 +137,7 @@ public class Envelope implements ExtendedPlugInFilter, DialogListener
 	
 	/**
 	 * Computes envelope (magnitude of analytic signal) of input waveforms,
-	 * assumed to be of length {@code w} and concatenated and stored in
+	 * assumed to be of length {@code recordLength} and concatenated and stored in
 	 * one-dimensional input array {@code waveforms}. Each waveform is
 	 * zero-padded to the next largest power of 2 if necessary in order to make
 	 * use of FFTs for efficiency, and the final output is truncated to the
