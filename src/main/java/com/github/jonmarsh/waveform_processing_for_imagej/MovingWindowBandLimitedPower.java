@@ -17,16 +17,16 @@ import java.util.Arrays;
  * centered around the current index, and then returns the mean value of the log
  * power spectrum within the specified frequency range at that index. The input
  * data are overwritten by the new computed values. The length of the moving
- * window is equal to {@code 2*radius+1}. At positions where portions of the
- * moving window lie outside the bounds of the waveform, the waveform values are
- * mirrored about the end points.
+ * window is equal to {@code 2*radius+1}. A plain DFT is used here since the
+ * window lengths and integration ranges are usually quite short, and we can use
+ * a lookup table for the sine & cosine values.
  * <p>
  * @author Jon N. Marsh
  */
 public class MovingWindowBandLimitedPower implements ExtendedPlugInFilter, DialogListener
 {
-	private int width;
-	private static int radius = 1;
+	private int width, height;
+	private int radius = 1;
 	private static final String[] windowTypes = WaveformUtils.WindowType.stringValues();
 	private static int windowChoice = WaveformUtils.WindowType.HAMMING.ordinal();
 	private static double windowParameter = 0.5;
@@ -34,7 +34,12 @@ public class MovingWindowBandLimitedPower implements ExtendedPlugInFilter, Dialo
 	private static double deltaT = 1.0;
 	private static double loFrequency = 0.0;
 	private static double hiFrequency = 0.1;
+	private static double windowLengthTime = 0.1;
 	private GenericDialog gd;
+	private int loIndex, hiIndex;
+	private double[][] cosArray;
+	private double[][] sinArray;
+	private double[] weights;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING;
 
 	public int setup(String arg, ImagePlus imp)
@@ -50,17 +55,18 @@ public class MovingWindowBandLimitedPower implements ExtendedPlugInFilter, Dialo
 		}
 
 		width = imp.getWidth();
+		height = imp.getHeight();
 
 		return flags;
 	}
 
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
-		gd = new GenericDialog("Moving Window Band-Limited Power...");
-		gd.addNumericField("Sampling interval (∆t)", deltaT, 4);
-		gd.addNumericField("Low frequency cutoff", loFrequency, 4, 4, "(units of 1/∆t");
-		gd.addNumericField("High frequency cutoff", hiFrequency, 4, 4, "(units of 1/∆t");
-		gd.addNumericField("Radius", radius, 0, 4, "points");
+		gd = new GenericDialog("Moving Window Band-Limited Power");
+		gd.addNumericField("Sampling interval (deltaT)", deltaT, 4);
+		gd.addNumericField("Low frequency cutoff", loFrequency, 4, 8, "(units of 1/deltaT)");
+		gd.addNumericField("High frequency cutoff", hiFrequency, 4, 8, "(units of 1/deltaT)");
+		gd.addNumericField("Window length", windowLengthTime, 0, 4, "(units of deltaT)");
 		gd.addChoice("Weight function", windowTypes, windowTypes[windowChoice]);
 		gd.addNumericField("Window parameter", windowParameter, 4);
 		windowParameterTextField = (TextField)(gd.getNumericFields().get(4));
@@ -73,6 +79,25 @@ public class MovingWindowBandLimitedPower implements ExtendedPlugInFilter, Dialo
 			return DONE;
 		}
 
+		// precompute Fourier coefficients, window weights, etc.
+		loIndex = (int)(loFrequency / deltaT);
+		hiIndex = (int)(hiFrequency / deltaT);
+		cosArray = new double[hiIndex - loIndex][width];
+		sinArray = new double[hiIndex - loIndex][width];
+		for (int k = loIndex; k < hiIndex; k++) {
+			double constant = -2 * Math.PI * k / width;
+			for (int n = 0; n < width; n++) {
+				double constant2 = constant * n;
+				cosArray[k - loIndex][n] = Math.cos(constant2);
+				sinArray[k - loIndex][n] = Math.sin(constant2);
+			}
+		}
+		weights = WaveformUtils.windowFunction(WaveformUtils.WindowType.values()[windowChoice], 2 * radius + 1, windowParameter, true);
+		radius = (int)(windowLengthTime / deltaT);
+		if (radius % 2 != 0) {
+			radius += 1;
+		}
+
 		return flags;
 	}
 
@@ -81,173 +106,119 @@ public class MovingWindowBandLimitedPower implements ExtendedPlugInFilter, Dialo
 		deltaT = gd.getNextNumber();
 		loFrequency = gd.getNextNumber();
 		hiFrequency = gd.getNextNumber();
-		radius = (int)gd.getNextNumber();
+		windowLengthTime = gd.getNextNumber();
 		windowChoice = gd.getNextChoiceIndex();
 		windowParameter = gd.getNextNumber();
 
 		windowParameterTextField.setEnabled(WaveformUtils.WindowType.values()[windowChoice].usesParameter());
 
-		return (!gd.invalidNumber() && radius >= 0 && deltaT > 0.0 && loFrequency >= 0.0 && hiFrequency > loFrequency && hiFrequency < 0.5 / deltaT);
+		return (!gd.invalidNumber()
+				&& windowLengthTime > 0.0
+				&& deltaT > 0.0
+				&& loFrequency >= 0.0
+				&& hiFrequency > loFrequency
+				&& hiFrequency < 0.5 / deltaT);
 	}
 
 	public void run(ImageProcessor ip)
 	{
 		float[] pixels = (float[])ip.getPixels();
 
-		execute(pixels, width, radius, WaveformUtils.WindowType.values()[windowChoice], windowParameter);
-	}
-
-	/**
-	 * Applies a moving window with weights specified by {@code windowType} to
-	 * each record in {@code waveforms}, where each record is of length
-	 * {@code recordLength}. The moving window is of length {@code 2*radius+1}.
-	 * Output values are normalized by the sum of the window coefficients. Input
-	 * waveforms are left unchanged if the array representing them is null,
-	 * {@code 2*radius+1>recordLength}, {@code radius<0}, or
-	 * {@code waveforms.length} is not evenly divisible by {@code recordLength}.
-	 * At positions where a part of the moving window lies outside the bounds of
-	 * the waveform, the waveform values are reflected around the appropriate
-	 * end point.
-	 * <p>
-	 * @param waveforms	      one-dimensional array composed of a series of
-	 *                        concatenated records, each of size equal to
-	 *                        {@code recordLength}
-	 * @param recordLength    size of each record in {@code waveforms}
-	 * @param radius          length of two-sided window function is equal to
-	 *                        {@code 2*radius+1}
-	 * @param windowType      window function
-	 * @param windowParameter used only for window functions that require it,
-	 *                        ignored otherwise
-	 */
-	public static final void execute(float[] waveforms, int recordLength, int radius, WaveformUtils.WindowType windowType, double windowParameter)
-	{
-		int windowLength = 2 * radius + 1;
-
-		if (waveforms != null && recordLength > windowLength && waveforms.length % recordLength == 0 && radius >= 0) {
-
-			// initialize single-sided window weight array (normalized)
-			double[] weights = WaveformUtils.windowFunctionSingleSided(windowType, radius, windowParameter, true);
-
-			// compute number of records
-			int numRecords = waveforms.length / recordLength;
-
-			// loop over all records
-			for (int i = 0; i < numRecords; i++) {
-
-				// compute row offset
-				int offset = i * recordLength;
-
-				// initialize double-precision copy of current waveform
-				double[] currentWaveformCopy = new double[recordLength];
-				for (int j = 0; j < recordLength; j++) {
-					currentWaveformCopy[j] = waveforms[offset + j];
+		for (int i = 0; i < height; i++) {	// loop over all waveforms within current slice
+			float[] tempArray = slidingWindowAvgPower(Arrays.copyOfRange(pixels, i * width, (i + 1) * width));
+			for (int j = 0; j < tempArray.length; j++) {
+				pixels[i * width + j] = (float)tempArray[j]; // store computed values in original dataset to re-use memory
+				if (IJ.escapePressed()) // provide option for aborting this potentially long calculation
+				{
+					return;
 				}
-
-				// move window and compute means
-				for (int j = 0; j < recordLength; j++) {
-
-					// initialize running sum (at center of windowed segment)
-					double sum = currentWaveformCopy[j] * weights[0];
-
-					// finish computing the sum at the current index
-					for (int k = -radius; k < 0; k++) {
-						int index = j + k;
-						if (index < 0) {
-							index = -index;
-						}
-						sum += weights[-k] * currentWaveformCopy[index];
-					}
-					for (int k = 1; k <= radius; k++) {
-						int index = j + k;
-						if (index > recordLength - 1) {
-							index = 2 * (recordLength - 1) - index;
-						}
-						sum += weights[k] * currentWaveformCopy[index];
-					}
-
-					waveforms[offset + j] = (float)sum;
-
-				}
-
 			}
-
 		}
+
+		IJ.resetMinAndMax();
 
 	}
 
-	/**
-	 * Applies a moving window with weights specified by {@code windowType} to
-	 * each record in {@code waveforms}, where each record is of length
-	 * {@code recordLength}. The moving window is of length {@code 2*radius+1}.
-	 * Output values are normalized by the sum of the window coefficients. Input
-	 * waveforms are left unchanged if the array representing them is null,
-	 * {@code 2*radius+1>recordLength}, {@code radius<0}, or
-	 * {@code waveforms.length} is not evenly divisible by {@code recordLength}.
-	 * At positions where a part of the moving window lies outside the bounds of
-	 * the waveform, the waveform values are reflected around the appropriate
-	 * end point.
-	 * <p>
-	 * @param waveforms	      one-dimensional array composed of a series of
-	 *                        concatenated records, each of size equal to
-	 *                        {@code recordLength}
-	 * @param recordLength    size of each record in {@code waveforms}
-	 * @param radius          length of two-sided window function is equal to
-	 *                        {@code 2*radius+1}
-	 * @param windowType      window function
-	 * @param windowParameter used only for window functions that require it,
-	 *                        ignored otherwise
-	 */
-	public static final void execute(double[] waveforms, int recordLength, int radius, WaveformUtils.WindowType windowType, double windowParameter)
+	/* We use a plain DFT here since the window lengths and integration ranges are usually quite short, and we can use a lookup table for the sin & cos values */
+	private float[] slidingWindowAvgPower(float[] a)
 	{
-		int windowLength = 2 * radius + 1;
+		int length = a.length;
+		float[] result = new float[length];
+		double norm = 1.0 / (hiIndex - loIndex);
 
-		if (waveforms != null && recordLength > windowLength && waveforms.length % recordLength == 0 && radius >= 0) {
+		// Take care of points near beginning of waveform
+		for (int i = 0; i < radius; i++) {
+			int count = radius + i + 1;
 
-			// initialize single-sided window weight array (normalized)
-			double[] weights = WaveformUtils.windowFunctionSingleSided(windowType, radius, windowParameter, true);
-
-			// compute number of records
-			int numRecords = waveforms.length / recordLength;
-
-			// loop over all records
-			for (int i = 0; i < numRecords; i++) {
-
-				// compute row offset
-				int offset = i * recordLength;
-
-				// initialize double-precision copy of current waveform
-				double[] currentWaveformCopy = Arrays.copyOfRange(waveforms, offset, offset + recordLength);
-
-				// move window and compute means
-				for (int j = 0; j < recordLength; j++) {
-
-					// initialize running sum (at center of windowed segment)
-					double sum = currentWaveformCopy[j] * weights[0];
-
-					// finish computing the sum at the current index
-					for (int k = -radius; k < 0; k++) {
-						int index = j + k;
-						if (index < 0) {
-							index = -index;
-						}
-						sum += weights[-k] * currentWaveformCopy[index];
-					}
-					for (int k = 1; k <= radius; k++) {
-						int index = j + k;
-						if (index > recordLength - 1) {
-							index = 2 * (recordLength - 1) - index;
-						}
-						sum += weights[k] * currentWaveformCopy[index];
-					}
-
-					waveforms[offset + j] = sum;
-
-				}
-
+			// Apply window
+			double[] temp = new double[count];
+			for (int j = 0; j < count; j++) {
+				temp[j] = weights[(radius - i) + j] * a[j];
 			}
 
+			// Sum over frequencies
+			double sum = 0.0;
+			for (int k = loIndex; k < hiIndex; k++) {
+				double sumRe = 0.0;
+				double sumIm = 0.0;
+				for (int j = 0, n = 0; j < count; j++, n++) {
+					sumRe += temp[j] * cosArray[k - loIndex][n];
+					sumIm += temp[j] * sinArray[k - loIndex][n];
+				}
+				sum += Math.log10(sumRe * sumRe + sumIm * sumIm);
+			}
+			result[i] = (float)(10.0 * sum * norm);
 		}
 
+		// Take care of middle region
+		for (int i = radius; i < length - radius; i++) {
+			int count = 2 * radius + 1;
+
+			// Apply window
+			double[] temp = new double[count];
+			for (int j = i - radius, h = 0; j <= i + radius; j++, h++) {
+				temp[h] = weights[h] * a[j];
+			}
+
+			// Sum over frequencies
+			double sum = 0.0;
+			for (int k = loIndex; k < hiIndex; k++) {
+				double sumRe = 0.0;
+				double sumIm = 0.0;
+				for (int j = 0, n = i - radius; j < count; j++, n++) {
+					sumRe += temp[j] * cosArray[k - loIndex][n];
+					sumIm += temp[j] * sinArray[k - loIndex][n];
+				}
+				sum += Math.log10(sumRe * sumRe + sumIm * sumIm);
+			}
+			result[i] = (float)(10.0 * sum * norm);
+		}
+
+		// Take care of points near end of waveform
+		for (int i = length - radius; i < length; i++) {
+			int count = radius + length - i;
+
+			// Apply window
+			double[] temp = new double[count];
+			for (int j = 0; j < count; j++) {
+				temp[j] = weights[j] * a[(i - radius) + j];
+			}
+
+			// Sum over frequencies
+			double sum = 0.0;
+			for (int k = loIndex; k < hiIndex; k++) {
+				double sumRe = 0.0;
+				double sumIm = 0.0;
+				for (int j = 0, n = (i - radius) + j; j < count; j++, n++) {
+					sumRe += temp[j] * cosArray[k - loIndex][n];
+					sumIm += temp[j] * sinArray[k - loIndex][n];
+				}
+				sum += Math.log10(sumRe * sumRe + sumIm * sumIm);
+			}
+			result[i] = (float)(10.0 * sum * norm);
+		}
+
+		return result;
 	}
 
 	public void setNPasses(int nPasses)
