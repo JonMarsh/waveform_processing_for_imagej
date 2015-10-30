@@ -335,8 +335,8 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 					gateStartIndex = -1;
 			}
 			if (gateStartIndex != -1) {
-				validGateStartPositions.add(new Point(i, gateStartIndex));
 				gateStartPositions[i] = gateStartIndex + offsetPoint + searchStartPoint;
+				validGateStartPositions.add(new Point(i, gateStartPositions[i]));
 			} else {
 				gateStartPositions[i] = -1;
 			}
@@ -393,7 +393,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 	// Returns the index of the first maximum peak value found which exceeds the specified threshold.  Returns -1 if no peaks above threshold are detected.
 	private int peakDetectMaximum(float[] a, float threshold)
 	{
-		int i = 1;
+		int i;
 		
 		for (i=1; i<a.length-1; i++) {
 			if (a[i] > threshold && a[i-1] < a[i] && a[i+1] < a[i]) {
