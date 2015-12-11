@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>net.imagej</groupId>
 		<artifactId>pom-imagej</artifactId>
-		<version>9.0.1</version>
+		<version>14.1.0</version>
 		<relativePath />
 	</parent>
 
@@ -31,8 +31,20 @@
 		<tag>HEAD</tag>
 		<url>https://github.com/jonmarsh/waveform_processing_for_imagej</url>
 	</scm>
-
-	<properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -48,27 +60,5 @@
 		</dependency>
 	</dependencies>
 	
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>create</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<doCheck>false</doCheck>
-					<doUpdate>false</doUpdate>
-					<shortRevisionLength>7</shortRevisionLength>
-				</configuration>
-			</plugin>
-		</plugins>
-		<finalName>${project.artifactId}-${project.version}-r${buildNumber}</finalName>
-	</build>
 	
 </project>

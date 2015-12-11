@@ -251,7 +251,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 						int selectedImageID = suitableImageIDs[panel.gateApplicationComboBox.getSelectedIndex()]; // apply gating to the desired image (not necessarily the image the gates were computed with)
 						short[] gatePositions = (short[]) gateProcessor.getPixels();
 						
-						if (outputGateROIs == true) {
+						if (outputGateROIs) {
 							RoiManager rm = RoiManager.getInstance();
 							if (rm == null) {
 								rm = new RoiManager();
@@ -263,16 +263,16 @@ public class GateCScanInteractivelySwing implements PlugIn
 								rm.add(WindowManager.getImage(inputImageID), roi, -1);
 							}
 						}
-						if (outputGatedSegments == true) {
+						if (outputGatedSegments) {
 							ImagePlus gatedImage = createGatedImage(WindowManager.getImage(selectedImageID), gatePositions, gateLength);
 							gatedImage.show();
 							IJ.resetMinAndMax();
 						}
-						if (outputGatePositions == true) {
+						if (outputGatePositions) {
 							ImagePlus borderImage = new ImagePlus(title + " gate positions", gateProcessor.duplicate());
 							borderImage.show();
 						}
-						if (outputGatedWaveforms == true) {
+						if (outputGatedWaveforms) {
 							ImagePlus gatedWaveformImage = createdGatedWaveformImage(WindowManager.getImage(selectedImageID), gatePositions, gateLength);
 							gatedWaveformImage.show();
 							IJ.resetMinAndMax();
@@ -468,7 +468,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 			}
 
 			// substitute nearest valid gate start position for all positions where no valid gates were detected
-			nearestNeighborInterpolate(gateStartPositions, nRecords, stackSize);
+//			nearestNeighborInterpolate(gateStartPositions, nRecords, stackSize);
 		}
 
 		return gateStartPositions;
@@ -481,7 +481,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 		short[] gateStartPositions = new short[numberOfRecords];
 
 		for (int i = 0; i < numberOfRecords; i++) {
-			int gateStart = (short) (-1);
+			int gateStart = -1;
 			if (searchBackwards) {
 				for (int j = 0, k = ((i + 1) * recordLength) - 1 - searchStartPoint; k >= i * recordLength; j++, k--) {
 					tempArray[j] = pixels[k];

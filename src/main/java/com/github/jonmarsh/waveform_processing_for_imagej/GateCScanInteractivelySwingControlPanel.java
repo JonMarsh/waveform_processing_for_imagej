@@ -12,13 +12,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 
-
 /**
  *
  * @author Jon N. Marsh
- * @version 2015-05-07
  */
-
 
 public class GateCScanInteractivelySwingControlPanel extends javax.swing.JPanel
 {
@@ -292,42 +289,42 @@ public class GateCScanInteractivelySwingControlPanel extends javax.swing.JPanel
 
     private void searchBackwardsCheckboxActionPerformed(ActionEvent evt)//GEN-FIRST:event_searchBackwardsCheckboxActionPerformed
     {//GEN-HEADEREND:event_searchBackwardsCheckboxActionPerformed
-        // TODO add your handling code here:
+		// TODO add your handling code here:
     }//GEN-LAST:event_searchBackwardsCheckboxActionPerformed
 
     private void outputGatePositionsCheckboxActionPerformed(ActionEvent evt)//GEN-FIRST:event_outputGatePositionsCheckboxActionPerformed
     {//GEN-HEADEREND:event_outputGatePositionsCheckboxActionPerformed
-        // TODO add your handling code here:
+		// TODO add your handling code here:
     }//GEN-LAST:event_outputGatePositionsCheckboxActionPerformed
 
     private void cancelButtonActionPerformed(ActionEvent evt)//GEN-FIRST:event_cancelButtonActionPerformed
     {//GEN-HEADEREND:event_cancelButtonActionPerformed
-        // TODO add your handling code here:
+		// TODO add your handling code here:
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void thresholdTextFieldActionPerformed(ActionEvent evt)//GEN-FIRST:event_thresholdTextFieldActionPerformed
     {//GEN-HEADEREND:event_thresholdTextFieldActionPerformed
-        // TODO add your handling code here:
+		// TODO add your handling code here:
     }//GEN-LAST:event_thresholdTextFieldActionPerformed
 
     private void searchStartPointTextFieldActionPerformed(ActionEvent evt)//GEN-FIRST:event_searchStartPointTextFieldActionPerformed
     {//GEN-HEADEREND:event_searchStartPointTextFieldActionPerformed
-        // TODO add your handling code here:
+		// TODO add your handling code here:
     }//GEN-LAST:event_searchStartPointTextFieldActionPerformed
 
     private void outputGatedRegionsCheckboxActionPerformed(ActionEvent evt)//GEN-FIRST:event_outputGatedRegionsCheckboxActionPerformed
     {//GEN-HEADEREND:event_outputGatedRegionsCheckboxActionPerformed
-        // TODO add your handling code here:
+		// TODO add your handling code here:
     }//GEN-LAST:event_outputGatedRegionsCheckboxActionPerformed
 
     private void smoothingRadiusTextFieldActionPerformed(ActionEvent evt)//GEN-FIRST:event_smoothingRadiusTextFieldActionPerformed
     {//GEN-HEADEREND:event_smoothingRadiusTextFieldActionPerformed
-        // TODO add your handling code here:
+		// TODO add your handling code here:
     }//GEN-LAST:event_smoothingRadiusTextFieldActionPerformed
 
     private void detectionMethodComboBoxActionPerformed(ActionEvent evt)//GEN-FIRST:event_detectionMethodComboBoxActionPerformed
     {//GEN-HEADEREND:event_detectionMethodComboBoxActionPerformed
-        // TODO add your handling code here:
+		// TODO add your handling code here:
     }//GEN-LAST:event_detectionMethodComboBoxActionPerformed
 
 

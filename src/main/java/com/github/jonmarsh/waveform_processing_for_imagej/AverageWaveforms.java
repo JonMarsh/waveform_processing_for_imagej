@@ -40,7 +40,6 @@ public class AverageWaveforms implements ExtendedPlugInFilter
             return DONE;
         }
 
-		stack = imp.getStack();
 		width = imp.getWidth();
         height = imp.getHeight();
 		stackSize = imp.getStackSize();

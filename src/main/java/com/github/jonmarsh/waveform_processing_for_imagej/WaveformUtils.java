@@ -3547,7 +3547,7 @@ public class WaveformUtils
 	 * fragments is exact since it fits into 53 significant bits. Used for
 	 * extended precision arithmetic.
 	 */
-	private static double[] break2(double x)
+	public static double[] break2(double x)
 	{
 		double bigX = x * 134217729; //... = x*(2^27 + 1)
 		double y = (x - bigX);
