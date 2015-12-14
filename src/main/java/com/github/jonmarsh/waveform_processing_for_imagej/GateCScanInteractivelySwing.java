@@ -83,14 +83,11 @@ public class GateCScanInteractivelySwing implements PlugIn
 				stack = inputImage.getStack();
 				title = inputImage.getTitle();
 				recordLength = inputImage.getWidth();
-				if (recordLength >= Short.MAX_VALUE) {
-					IJ.showMessage("This plugin may not behave properly with image widths greather than 2^15 - 1");
-				}
 				recordsPerFrame = inputImage.getHeight();
 				numberOfFrames = inputImage.getImageStackSize();
 				currentSlice = inputImage.getSlice();
 				globalMinAndMax = WaveformUtils.getGlobalMinAndMax(inputImage);
-				gateImage = IJ.createImage(pluginTitle + title, "16-bit", recordsPerFrame, numberOfFrames, 1);
+				gateImage = IJ.createImage(pluginTitle + title, "32-bit", recordsPerFrame, numberOfFrames, 1);
 				gateProcessor = gateImage.getProcessor();
 				gateCanvas = new ImageCanvas(gateImage);
 				suitableImageIDs = getSuitableImageIDs(inputImage, gateImage);
@@ -127,13 +124,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 			panel = new GateCScanInteractivelySwingControlPanel();
 			try {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			} catch (ClassNotFoundException ex) {
-				Logger.getLogger(GateCScanInteractivelySwing.class.getName()).log(Level.SEVERE, null, ex);
-			} catch (InstantiationException ex) {
-				Logger.getLogger(GateCScanInteractivelySwing.class.getName()).log(Level.SEVERE, null, ex);
-			} catch (IllegalAccessException ex) {
-				Logger.getLogger(GateCScanInteractivelySwing.class.getName()).log(Level.SEVERE, null, ex);
-			} catch (UnsupportedLookAndFeelException ex) {
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
 				Logger.getLogger(GateCScanInteractivelySwing.class.getName()).log(Level.SEVERE, null, ex);
 			}
 			SwingUtilities.updateComponentTreeUI(panel);
@@ -194,14 +185,14 @@ public class GateCScanInteractivelySwing implements PlugIn
 				
 				if (source == panel.createGatesButton) {
 					detectionMethodSelection = panel.detectionMethodComboBox.getSelectedIndex();
-					short[] gatePositions = computeGateStartPositionsForStack(stack, autoStartSearchPoint, offsetPoint, threshold, detectionMethodSelection);
+					float[] gatePositions = computeGateStartPositionsForStack(stack, autoStartSearchPoint, offsetPoint, threshold, detectionMethodSelection);
 					gateProcessor.setPixels(gatePositions);
 					Overlay overlay = new Overlay(new Line(0, currentSlice - 1, recordsPerFrame, currentSlice - 1));
 					overlay.setStrokeColor(Color.red);
 					gateImage.setOverlay(overlay);
 					gatesExist = true;
 					IJ.resetMinAndMax();
-					short[] gatePositionsForDisplayedSlice = Arrays.copyOfRange(gatePositions, (currentSlice - 1) * recordsPerFrame, currentSlice * recordsPerFrame);
+					float[] gatePositionsForDisplayedSlice = Arrays.copyOfRange(gatePositions, (currentSlice - 1) * recordsPerFrame, currentSlice * recordsPerFrame);
 					drawSingleROI(WindowManager.getImage(inputImageID), gatePositionsForDisplayedSlice, gateLength, searchBackwards);
 				}
 				
@@ -228,8 +219,8 @@ public class GateCScanInteractivelySwing implements PlugIn
 						}
 						gateImage.updateAndDraw();
 						IJ.resetMinAndMax();
-						short[] gatePositions = (short[]) gateProcessor.getPixels();
-						short[] gatePositionsForDisplayedSlice = Arrays.copyOfRange(gatePositions, (currentSlice - 1) * recordsPerFrame, currentSlice * recordsPerFrame);
+						float[] gatePositions = (float[]) gateProcessor.getPixels();
+						float[] gatePositionsForDisplayedSlice = Arrays.copyOfRange(gatePositions, (currentSlice - 1) * recordsPerFrame, currentSlice * recordsPerFrame);
 						drawSingleROI(WindowManager.getImage(inputImageID), gatePositionsForDisplayedSlice, gateLength, searchBackwards);
 					}
 				}
@@ -249,7 +240,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 						outputGatedWaveforms = panel.outputGatedWaveformsCheckbox.isSelected();
 						
 						int selectedImageID = suitableImageIDs[panel.gateApplicationComboBox.getSelectedIndex()]; // apply gating to the desired image (not necessarily the image the gates were computed with)
-						short[] gatePositions = (short[]) gateProcessor.getPixels();
+						float[] gatePositions = (float[]) gateProcessor.getPixels();
 						
 						if (outputGateROIs) {
 							RoiManager rm = RoiManager.getInstance();
@@ -258,7 +249,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 							}
 							for (int i = 0; i < WindowManager.getImage(inputImageID).getStackSize(); i++) {
 								WindowManager.getImage(inputImageID).setSlice(i + 1);
-								short[] gatePositionsForThisSlice = Arrays.copyOfRange(gatePositions, i * recordsPerFrame, (i + 1) * recordsPerFrame);
+								float[] gatePositionsForThisSlice = Arrays.copyOfRange(gatePositions, i * recordsPerFrame, (i + 1) * recordsPerFrame);
 								PolygonRoi roi = createSingleROI(gatePositionsForThisSlice, gateLength, searchBackwards);
 								rm.add(WindowManager.getImage(inputImageID), roi, -1);
 							}
@@ -329,8 +320,8 @@ public class GateCScanInteractivelySwing implements PlugIn
 						Overlay overlay = new Overlay(new Line(0, currentSlice - 1, recordsPerFrame, currentSlice - 1));
 						overlay.setStrokeColor(Color.red);
 						gateImage.setOverlay(overlay);
-						short[] gatePositions = (short[])gateProcessor.getPixels();
-						short[] gatePositionsForDisplayedSlice = Arrays.copyOfRange(gatePositions, (currentSlice - 1) * recordsPerFrame, currentSlice * recordsPerFrame);
+						float[] gatePositions = (float[])gateProcessor.getPixels();
+						float[] gatePositionsForDisplayedSlice = Arrays.copyOfRange(gatePositions, (currentSlice - 1) * recordsPerFrame, currentSlice * recordsPerFrame);
 						drawSingleROI(image, gatePositionsForDisplayedSlice, gateLength, searchBackwards);
 					}
 				}
@@ -340,7 +331,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 	}
 
 	/* Create new ImagePlus from gated segments of input image */
-	private ImagePlus createGatedImage(ImagePlus inputImage, short[] gateStartPositions, int gateLength)
+	private ImagePlus createGatedImage(ImagePlus inputImage, float[] gateStartPositions, int gateLength)
 	{
 		int nPoints = inputImage.getWidth();
 		int nRecords = inputImage.getHeight();
@@ -356,9 +347,9 @@ public class GateCScanInteractivelySwing implements PlugIn
 				if (gateStartPositions[gateIndex] < 0) { // gate position set to -1, so no boundary detected; just set start of gate to 0
 					System.arraycopy(inputPixels, i * nPoints, gatedPixels, i * gateLength, gateLength);
 				} else if (gateStartPositions[gateIndex] + gateLength >= nPoints) { // end of gate set past end of waveform, so just pad with zeroes
-					System.arraycopy(inputPixels, (i * nPoints) + gateStartPositions[gateIndex], gatedPixels, i * gateLength, nPoints - gateStartPositions[i]);
+					System.arraycopy(inputPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gatedPixels, i * gateLength, nPoints - (int)gateStartPositions[i]);
 				} else {	// gate is within waveform limits
-					System.arraycopy(inputPixels, (i * nPoints) + gateStartPositions[gateIndex], gatedPixels, i * gateLength, gateLength);
+					System.arraycopy(inputPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gatedPixels, i * gateLength, gateLength);
 				}
 			}
 		}
@@ -367,7 +358,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 	}
 
 	/* Create new ImagePlus with gated full-length waveforms (zero-padded) */
-	private ImagePlus createdGatedWaveformImage(ImagePlus inputImage, short[] gateStartPositions, int gateLength)
+	private ImagePlus createdGatedWaveformImage(ImagePlus inputImage, float[] gateStartPositions, int gateLength)
 	{
 		int nPoints = inputImage.getWidth();
 		int nRecords = inputImage.getHeight();
@@ -383,9 +374,9 @@ public class GateCScanInteractivelySwing implements PlugIn
 				if (gateStartPositions[gateIndex] < 0) { // gate position set to -1, so no boundary detected; just set start of gate to 0
 					System.arraycopy(inputPixels, i * nPoints, gatedPixels, i * gateLength, gateLength);
 				} else if (gateStartPositions[gateIndex] + gateLength >= nPoints) { // end of gate set past end of waveform, so just pad with zeroes
-					System.arraycopy(inputPixels, (i * nPoints) + gateStartPositions[gateIndex], gatedPixels, (i * nPoints) + gateStartPositions[gateIndex], nPoints - gateStartPositions[i]);
+					System.arraycopy(inputPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gatedPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], nPoints - (int)gateStartPositions[i]);
 				} else {	// gate is within waveform limits
-					System.arraycopy(inputPixels, (i * nPoints) + gateStartPositions[gateIndex], gatedPixels, (i * nPoints) + gateStartPositions[gateIndex], gateLength);
+					System.arraycopy(inputPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gatedPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gateLength);
 				}
 			}
 		}
@@ -451,19 +442,19 @@ public class GateCScanInteractivelySwing implements PlugIn
 	}
 	
 	/* Computes gate start positions for entire stack */
-	private short[] computeGateStartPositionsForStack(ImageStack stack, int searchStartPoint, int offsetPoint, float threshold, int detectionType)
+	private float[] computeGateStartPositionsForStack(ImageStack stack, int searchStartPoint, int offsetPoint, float threshold, int detectionType)
 	{
 		int nPoints = stack.getWidth();
 		int nRecords = stack.getHeight();
 		int stackSize = stack.getSize();
-		short[] gateStartPositions = new short[nRecords * stackSize];
+		float[] gateStartPositions = new float[nRecords * stackSize];
 		float[] pixelValues;
 
 		// check to make sure there is a possibility of detecting a peak above the specified threshold
 		if (threshold < globalMinAndMax[1]) {
 			for (int slice = 1; slice <= stackSize; slice++) {
 				pixelValues = (float[]) stack.getProcessor(slice).convertToFloat().getPixels();
-				short[] sliceGates = computeGateStartPositions(pixelValues, nPoints, nRecords, searchStartPoint, offsetPoint, threshold, detectionType);
+				float[] sliceGates = computeGateStartPositions(pixelValues, nPoints, nRecords, searchStartPoint, offsetPoint, threshold, detectionType);
 				System.arraycopy(sliceGates, 0, gateStartPositions, (slice - 1) * nRecords, nRecords);
 			}
 
@@ -475,10 +466,10 @@ public class GateCScanInteractivelySwing implements PlugIn
 	}
 
 	/* Computes gate start positions for individual slice, assumed to be represented by data in 'pixels' */
-	private short[] computeGateStartPositions(float[] pixels, int recordLength, int numberOfRecords, int searchStartPoint, int offsetPoint, float threshold, int detectionType)
+	private float[] computeGateStartPositions(float[] pixels, int recordLength, int numberOfRecords, int searchStartPoint, int offsetPoint, float threshold, int detectionType)
 	{
 		float[] tempArray = new float[recordLength];
-		short[] gateStartPositions = new short[numberOfRecords];
+		float[] gateStartPositions = new float[numberOfRecords];
 
 		for (int i = 0; i < numberOfRecords; i++) {
 			int gateStart = -1;
@@ -495,7 +486,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 						break;
 					default:
 				}
-				gateStartPositions[i] = (gateStart >= 0) ? (short)(recordLength - (gateStart + offsetPoint + searchStartPoint) - 1) : (short) (-1);
+				gateStartPositions[i] = (gateStart >= 0) ? recordLength - (gateStart + offsetPoint + searchStartPoint) - 1 : -1;
 			} else {
 				System.arraycopy(pixels, (i * recordLength) + searchStartPoint, tempArray, 0, recordLength - searchStartPoint);
 				switch (detectionType) {
@@ -507,7 +498,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 						break;
 					default:
 				}
-				gateStartPositions[i] = (gateStart >= 0) ? (short)(gateStart + offsetPoint + searchStartPoint) : (short) (-1);
+				gateStartPositions[i] = (gateStart >= 0) ? gateStart + offsetPoint + searchStartPoint : -1;
 			}
 
 		}
@@ -516,21 +507,21 @@ public class GateCScanInteractivelySwing implements PlugIn
 	}
 
 	/* Draw single ROI onto current slice of input image */
-	private void drawSingleROI(ImagePlus image, short[] gateStartPositions, int gateLength, boolean reverseSearch)
+	private void drawSingleROI(ImagePlus image, float[] gateStartPositions, int gateLength, boolean reverseSearch)
 	{
 		image.setRoi(createSingleROI(gateStartPositions, gateLength, reverseSearch));
 	}
 
 	/* Create single ROI for current slice */
-	private PolygonRoi createSingleROI(short[] gateStartPositions, int gateLength, boolean reverseSearch)
+	private PolygonRoi createSingleROI(float[] gateStartPositions, int gateLength, boolean reverseSearch)
 	{
 		int direction = reverseSearch ? -1 : 1;
 		int length = gateStartPositions.length;
 		int[] xPoints = new int[length * 2];
 		int[] yPoints = new int[length * 2];
 		for (int i = 0; i < length; i++) {
-			xPoints[i] = gateStartPositions[i];
-			xPoints[length + i] = gateStartPositions[(length - 1) - i] + direction * gateLength;
+			xPoints[i] = (int)gateStartPositions[i];
+			xPoints[length + i] = (int)gateStartPositions[(length - 1) - i] + direction * gateLength;
 			yPoints[i] = i;
 			yPoints[length + i] = (length - 1) - i;
 		}
