@@ -255,7 +255,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 							}
 						}
 						if (outputGatedSegments) {
-							ImagePlus gatedImage = createGatedImage(WindowManager.getImage(selectedImageID), gatePositions, gateLength);
+							ImagePlus gatedImage = createGatedImage(WindowManager.getImage(selectedImageID), gatePositions, gateLength, searchBackwards);
 							gatedImage.show();
 							IJ.resetMinAndMax();
 						}
@@ -264,7 +264,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 							borderImage.show();
 						}
 						if (outputGatedWaveforms) {
-							ImagePlus gatedWaveformImage = createdGatedWaveformImage(WindowManager.getImage(selectedImageID), gatePositions, gateLength);
+							ImagePlus gatedWaveformImage = createdGatedWaveformImage(WindowManager.getImage(selectedImageID), gatePositions, gateLength, searchBackwards);
 							gatedWaveformImage.show();
 							IJ.resetMinAndMax();
 						}
@@ -331,7 +331,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 	}
 
 	/* Create new ImagePlus from gated segments of input image */
-	private ImagePlus createGatedImage(ImagePlus inputImage, float[] gateStartPositions, int gateLength)
+	private ImagePlus createGatedImage(ImagePlus inputImage, float[] gateStartPositions, int gateLength, boolean searchBackwards)
 	{
 		int nPoints = inputImage.getWidth();
 		int nRecords = inputImage.getHeight();
@@ -344,10 +344,12 @@ public class GateCScanInteractivelySwing implements PlugIn
 			float[] gatedPixels = (float[]) gatedStack.getPixels(slice);
 			for (int i = 0; i < nRecords; i++) {
 				int gateIndex = ((slice - 1) * nRecords) + i;
-				if (gateStartPositions[gateIndex] < 0) { // gate position set to -1, so no boundary detected; just set start of gate to 0
-					System.arraycopy(inputPixels, i * nPoints, gatedPixels, i * gateLength, gateLength);
-				} else if (gateStartPositions[gateIndex] + gateLength >= nPoints) { // end of gate set past end of waveform, so just pad with zeroes
+				if (gateStartPositions[gateIndex] < 0) { // gate position set to -1, so no boundary detected -- set all values to zero
+					// new arrays are already initialized to zero, so nothing to do here
+				} else if (gateStartPositions[gateIndex] + gateLength >= nPoints && !searchBackwards) { // end of gate set past end of waveform, so just pad with zeroes
 					System.arraycopy(inputPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gatedPixels, i * gateLength, nPoints - (int)gateStartPositions[i]);
+				} else if (gateStartPositions[gateIndex] < (gateLength-1) && searchBackwards) { // beginning of gate set past beginning of waveform, so pad with zeroes
+					System.arraycopy(inputPixels, i*nPoints, gatedPixels, (i*gateLength)+gateLength-((int)gateStartPositions[gateIndex]+1), (gateLength-(int)gateStartPositions[gateIndex])+1);
 				} else {	// gate is within waveform limits
 					System.arraycopy(inputPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gatedPixels, i * gateLength, gateLength);
 				}
@@ -358,7 +360,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 	}
 
 	/* Create new ImagePlus with gated full-length waveforms (zero-padded) */
-	private ImagePlus createdGatedWaveformImage(ImagePlus inputImage, float[] gateStartPositions, int gateLength)
+	private ImagePlus createdGatedWaveformImage(ImagePlus inputImage, float[] gateStartPositions, int gateLength, boolean searchBackwards)
 	{
 		int nPoints = inputImage.getWidth();
 		int nRecords = inputImage.getHeight();
@@ -371,10 +373,12 @@ public class GateCScanInteractivelySwing implements PlugIn
 			float[] gatedPixels = (float[]) gatedStack.getPixels(slice);
 			for (int i = 0; i < nRecords; i++) {
 				int gateIndex = ((slice - 1) * nRecords) + i;
-				if (gateStartPositions[gateIndex] < 0) { // gate position set to -1, so no boundary detected; just set start of gate to 0
-					System.arraycopy(inputPixels, i * nPoints, gatedPixels, i * gateLength, gateLength);
-				} else if (gateStartPositions[gateIndex] + gateLength >= nPoints) { // end of gate set past end of waveform, so just pad with zeroes
+				if (gateStartPositions[gateIndex] < 0) { // gate position set to -1, so no boundary detected -- set all values to zero
+					// new arrays are already initialized to zero, so nothing to do here
+				} else if (gateStartPositions[gateIndex] + gateLength >= nPoints && !searchBackwards) { // end of gate set past end of waveform, so just pad with zeroes
 					System.arraycopy(inputPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gatedPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], nPoints - (int)gateStartPositions[i]);
+				} else if (gateStartPositions[gateIndex] < (gateLength-1) && searchBackwards) { // beginning of gate set past beginning of waveform, so pad with zeroes
+					System.arraycopy(inputPixels, i*nPoints, gatedPixels, i*nPoints, gateLength-(int)gateStartPositions[gateIndex]+1);
 				} else {	// gate is within waveform limits
 					System.arraycopy(inputPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gatedPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gateLength);
 				}
@@ -450,16 +454,10 @@ public class GateCScanInteractivelySwing implements PlugIn
 		float[] gateStartPositions = new float[nRecords * stackSize];
 		float[] pixelValues;
 
-		// check to make sure there is a possibility of detecting a peak above the specified threshold
-		if (threshold < globalMinAndMax[1]) {
-			for (int slice = 1; slice <= stackSize; slice++) {
-				pixelValues = (float[]) stack.getProcessor(slice).convertToFloat().getPixels();
-				float[] sliceGates = computeGateStartPositions(pixelValues, nPoints, nRecords, searchStartPoint, offsetPoint, threshold, detectionType);
-				System.arraycopy(sliceGates, 0, gateStartPositions, (slice - 1) * nRecords, nRecords);
-			}
-
-			// substitute nearest valid gate start position for all positions where no valid gates were detected
-//			nearestNeighborInterpolate(gateStartPositions, nRecords, stackSize);
+		for (int slice = 1; slice <= stackSize; slice++) {
+			pixelValues = (float[]) stack.getProcessor(slice).convertToFloat().getPixels();
+			float[] sliceGates = computeGateStartPositions(pixelValues, nPoints, nRecords, searchStartPoint, offsetPoint, threshold, detectionType);
+			System.arraycopy(sliceGates, 0, gateStartPositions, (slice - 1) * nRecords, nRecords);
 		}
 
 		return gateStartPositions;
@@ -513,9 +511,9 @@ public class GateCScanInteractivelySwing implements PlugIn
 	}
 
 	/* Create single ROI for current slice */
-	private PolygonRoi createSingleROI(float[] gateStartPositions, int gateLength, boolean reverseSearch)
+	private PolygonRoi createSingleROI(float[] gateStartPositions, int gateLength, boolean searchBackwards)
 	{
-		int direction = reverseSearch ? -1 : 1;
+		int direction = searchBackwards ? -1 : 1;
 		int length = gateStartPositions.length;
 		int[] xPoints = new int[length * 2];
 		int[] yPoints = new int[length * 2];
@@ -564,7 +562,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 		int channels = impToCheckAgainst.getProcessor().getNChannels();
 		int thisID = impToCheckAgainst.getID();
 		int[] fullList = WindowManager.getIDList();
-		ArrayList<Integer> suitableIDs = new ArrayList<Integer>(); //will hold image ID's of suitable images
+		ArrayList<Integer> suitableIDs = new ArrayList<>(); //will hold image ID's of suitable images
 		suitableIDs.add(thisID); // make sure the first element is the image we're comparing everything to
 		for (int imageIDtoCheck : fullList) {
 			ImagePlus impFromList = WindowManager.getImage(imageIDtoCheck);

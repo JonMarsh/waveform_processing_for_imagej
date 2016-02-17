@@ -164,7 +164,7 @@ public class ZeroCrossingCount implements ExtendedPlugInFilter
 				int count = 0;
 				for (int j=1; j<recordLength; j++) {
 					double newValue = waveforms[offset+j];
-					if (currentValue*newValue<0.0f) {
+					if (currentValue*newValue<0.0) {
 						count++;
 					}
 					currentValue = newValue;
