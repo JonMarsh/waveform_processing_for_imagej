@@ -34,6 +34,7 @@ public class Skewness implements ExtendedPlugInFilter, DialogListener
 	private PlugInFilterRunner pfr;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		// perform final processing here
@@ -64,6 +65,7 @@ public class Skewness implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		this.pfr = pfr;
@@ -80,6 +82,7 @@ public class Skewness implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent awte)
 	{
 		isSampleSkewness = gd.getNextRadioButton().equals(radioButtonLabels[0]);
@@ -87,6 +90,7 @@ public class Skewness implements ExtendedPlugInFilter, DialogListener
 		return true;
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		int currentSlice = pfr.getSliceNumber();
@@ -240,6 +244,7 @@ public class Skewness implements ExtendedPlugInFilter, DialogListener
 		return output;
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

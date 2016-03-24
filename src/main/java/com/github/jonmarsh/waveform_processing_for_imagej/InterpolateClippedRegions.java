@@ -37,6 +37,7 @@ public class InterpolateClippedRegions implements ExtendedPlugInFilter, DialogLi
 	private static double clippingThreshold = 1.0;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
@@ -54,6 +55,7 @@ public class InterpolateClippedRegions implements ExtendedPlugInFilter, DialogLi
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		gd = new GenericDialog("Interpolate Clipped Waveforms With Cubic Spline");
@@ -69,6 +71,7 @@ public class InterpolateClippedRegions implements ExtendedPlugInFilter, DialogLi
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		clippingThreshold = gd.getNextNumber();
@@ -76,6 +79,7 @@ public class InterpolateClippedRegions implements ExtendedPlugInFilter, DialogLi
 		return (!gd.invalidNumber() && clippingThreshold >= 0.0);
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		float[] pixels = (float[])ip.getPixels();
@@ -127,7 +131,7 @@ public class InterpolateClippedRegions implements ExtendedPlugInFilter, DialogLi
 				double[][] coeffs = WaveformUtils.cubicSplineInterpolant(Arrays.copyOf(validX, numberValid), Arrays.copyOf(validY, numberValid));
 
 				// create a sorted map to hold spline coefficients (except for last one, which has zero values for all except constant coefficient
-				TreeMap<Double, double[]> splineMap = new TreeMap<Double, double[]>();
+				TreeMap<Double, double[]> splineMap = new TreeMap<>();
 				for (int j = 0; j < numberValid - 1; j++) {
 					splineMap.put(validX[j], new double[]{coeffs[0][j], coeffs[1][j], coeffs[2][j], coeffs[3][j]});
 //					IJ.log("x="+validX[j]+": "+coeffs[0][j]+", "+coeffs[1][j]+", "+coeffs[2][j]+", "+coeffs[3][j]);
@@ -197,7 +201,7 @@ public class InterpolateClippedRegions implements ExtendedPlugInFilter, DialogLi
 				double[][] coeffs = WaveformUtils.cubicSplineInterpolant(Arrays.copyOf(validX, numberValid), Arrays.copyOf(validY, numberValid));
 
 				// create a sorted map to hold spline coefficients (except for last one, which has zero values for all except constant coefficient
-				TreeMap<Double, double[]> splineMap = new TreeMap<Double, double[]>();
+				TreeMap<Double, double[]> splineMap = new TreeMap<>();
 				for (int j = 0; j < numberValid - 1; j++) {
 					splineMap.put(validX[j], new double[]{coeffs[0][j], coeffs[1][j], coeffs[2][j], coeffs[3][j]});
 //					IJ.log("x="+validX[j]+": "+coeffs[0][j]+", "+coeffs[1][j]+", "+coeffs[2][j]+", "+coeffs[3][j]);
@@ -225,6 +229,7 @@ public class InterpolateClippedRegions implements ExtendedPlugInFilter, DialogLi
 		return interpolatedWaveforms;
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

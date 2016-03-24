@@ -25,6 +25,7 @@ public class AverageWaveforms implements ExtendedPlugInFilter
     private PlugInFilterRunner pfr;
     private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + FINAL_PROCESSING;
 	
+	@Override
     public int setup(String arg, ImagePlus imp) 
     {
 		if (arg.equals("final")) {
@@ -55,6 +56,7 @@ public class AverageWaveforms implements ExtendedPlugInFilter
         return flags;
     }	
 		
+	@Override
 	public void run(ImageProcessor ip) 
 	{
 		// retrieve image slice being operated on
@@ -145,6 +147,7 @@ public class AverageWaveforms implements ExtendedPlugInFilter
 	}
 	
 	// no dialog is displayed for this plugin, but we use this method to get a reference to the PlugInFilterRunner
+	@Override
 	public int showDialog(ImagePlus ip, String string, PlugInFilterRunner pfr)
 	{
 		this.pfr = pfr;
@@ -152,6 +155,7 @@ public class AverageWaveforms implements ExtendedPlugInFilter
 		return flags;
 	}
 
+	@Override
 	public void setNPasses(int i)
 	{
 	}

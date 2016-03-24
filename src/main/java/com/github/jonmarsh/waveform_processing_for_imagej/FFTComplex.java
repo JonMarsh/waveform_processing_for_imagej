@@ -40,6 +40,7 @@ public class FFTComplex implements ExtendedPlugInFilter, DialogListener
 	private static final String NO_CHOICE = "< none >";
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING + NO_CHANGES;
 	
+	@Override
     public int setup(String arg, ImagePlus imp) 
     {
         // perform any final processing here
@@ -76,6 +77,7 @@ public class FFTComplex implements ExtendedPlugInFilter, DialogListener
         return flags;
     }	
 
+	@Override
     public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
     {
         this.pfr = pfr;
@@ -102,6 +104,7 @@ public class FFTComplex implements ExtendedPlugInFilter, DialogListener
         return flags;
     }
 	
+	@Override
     public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
     {
         typeChoice = gd.getNextChoiceIndex();
@@ -132,6 +135,7 @@ public class FFTComplex implements ExtendedPlugInFilter, DialogListener
 		return true;
     }
 
+	@Override
     public void run(ImageProcessor ip) 
     {
         int currentSlice = pfr.getSliceNumber();
@@ -304,7 +308,7 @@ public class FFTComplex implements ExtendedPlugInFilter, DialogListener
 		int[] allIDs = WindowManager.getIDList();
 		
 		// Populate an ArrayList with all open imageIDs that have the same width, height, and stackSize as input
-		ArrayList<Integer> usableArrayList = new ArrayList<Integer>();
+		ArrayList<Integer> usableArrayList = new ArrayList<>();
 		for(int i : allIDs) {
 			ImagePlus currentImp = WindowManager.getImage(i);
 			if (currentImp.getWidth() == impToMatch.getWidth() && 
@@ -329,6 +333,7 @@ public class FFTComplex implements ExtendedPlugInFilter, DialogListener
 		}
 	}
 	
+	@Override
     public void setNPasses(int nPasses) {}
 	
 }

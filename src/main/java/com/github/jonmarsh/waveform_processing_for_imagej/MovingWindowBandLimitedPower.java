@@ -42,6 +42,7 @@ public class MovingWindowBandLimitedPower implements ExtendedPlugInFilter, Dialo
 	private double[] weights;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
@@ -60,6 +61,7 @@ public class MovingWindowBandLimitedPower implements ExtendedPlugInFilter, Dialo
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		gd = new GenericDialog("Moving Window Band-Limited Power");
@@ -101,6 +103,7 @@ public class MovingWindowBandLimitedPower implements ExtendedPlugInFilter, Dialo
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		deltaT = gd.getNextNumber();
@@ -120,6 +123,7 @@ public class MovingWindowBandLimitedPower implements ExtendedPlugInFilter, Dialo
 				&& hiFrequency < 0.5 / deltaT);
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		float[] pixels = (float[])ip.getPixels();
@@ -221,6 +225,7 @@ public class MovingWindowBandLimitedPower implements ExtendedPlugInFilter, Dialo
 		return result;
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

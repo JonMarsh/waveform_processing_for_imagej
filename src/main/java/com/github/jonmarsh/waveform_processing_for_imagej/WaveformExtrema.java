@@ -47,6 +47,7 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 	private PlugInFilterRunner pfr;
 	private final int flags = DOES_8G + DOES_16 + DOES_32 + CONVERT_TO_FLOAT + DOES_STACKS + PARALLELIZE_STACKS + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
@@ -83,6 +84,7 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 	}
 
 	// No dialog needed here, but we use it to access the PlugInFilterRunner for parallel processing
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		this.pfr = pfr;
@@ -120,6 +122,7 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		outputMaximaPositions = gd.getNextBoolean();
@@ -131,6 +134,7 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 		return true;
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		int currentSlice = pfr.getSliceNumber();
@@ -139,7 +143,7 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 		SignalExtrema[] results = execute(pixels, width, interpolationChoice);
 
 		if (outputMaximaPositions) {
-			float[] maxPositionPixels = (float[]) (maxPositionStack.getProcessor(currentSlice).getPixels());
+			float[] maxPositionPixels = (float[])(maxPositionStack.getProcessor(currentSlice).getPixels());
 			for (int i = 0; i < height; i++) {
 				int offset = i * width;
 				ArrayList<WaveformPoint> maxList = results[i].maximaList;
@@ -149,7 +153,7 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 			}
 		}
 		if (outputMaximaValues) {
-			float[] maxValuePixels = (float[]) (maxValueStack.getProcessor(currentSlice).getPixels());
+			float[] maxValuePixels = (float[])(maxValueStack.getProcessor(currentSlice).getPixels());
 			for (int i = 0; i < height; i++) {
 				int offset = i * width;
 				ArrayList<WaveformPoint> maxList = results[i].maximaList;
@@ -159,7 +163,7 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 			}
 		}
 		if (outputMinimaPositions) {
-			float[] minPositionPixels = (float[]) (minPositionStack.getProcessor(currentSlice).getPixels());
+			float[] minPositionPixels = (float[])(minPositionStack.getProcessor(currentSlice).getPixels());
 			for (int i = 0; i < height; i++) {
 				int offset = i * width;
 				ArrayList<WaveformPoint> minList = results[i].minimaList;
@@ -169,7 +173,7 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 			}
 		}
 		if (outputMinimaValues) {
-			float[] minValuePixels = (float[]) (minValueStack.getProcessor(currentSlice).getPixels());
+			float[] minValuePixels = (float[])(minValueStack.getProcessor(currentSlice).getPixels());
 			for (int i = 0; i < height; i++) {
 				int offset = i * width;
 				ArrayList<WaveformPoint> minList = results[i].minimaList;
@@ -218,8 +222,8 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 				int offset = i * recordLength;
 
 				// initialize lists to hold extrema data
-				ArrayList<WaveformPoint> maximaList = new ArrayList<WaveformPoint>();
-				ArrayList<WaveformPoint> minimaList = new ArrayList<WaveformPoint>();
+				ArrayList<WaveformPoint> maximaList = new ArrayList<>();
+				ArrayList<WaveformPoint> minimaList = new ArrayList<>();
 
 				switch (interpolationMethod) {
 
@@ -318,8 +322,8 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 				int offset = i * recordLength;
 
 				// initialize lists to hold extrema data
-				ArrayList<WaveformPoint> maximaList = new ArrayList<WaveformPoint>();
-				ArrayList<WaveformPoint> minimaList = new ArrayList<WaveformPoint>();
+				ArrayList<WaveformPoint> maximaList = new ArrayList<>();
+				ArrayList<WaveformPoint> minimaList = new ArrayList<>();
 
 				switch (interpolationMethod) {
 
@@ -390,7 +394,6 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 	 */
 	public static final class SignalExtrema
 	{
-
 		private ArrayList<WaveformPoint> maximaList;
 		private ArrayList<WaveformPoint> minimaList;
 
@@ -399,8 +402,8 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 		 */
 		public SignalExtrema()
 		{
-			maximaList = new ArrayList<WaveformPoint>();
-			minimaList = new ArrayList<WaveformPoint>();
+			maximaList = new ArrayList<>();
+			minimaList = new ArrayList<>();
 		}
 
 		/**
@@ -497,6 +500,7 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

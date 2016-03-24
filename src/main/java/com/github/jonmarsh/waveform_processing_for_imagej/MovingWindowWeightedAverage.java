@@ -34,6 +34,7 @@ public class MovingWindowWeightedAverage implements ExtendedPlugInFilter, Dialog
 	private GenericDialog gd;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
@@ -51,6 +52,7 @@ public class MovingWindowWeightedAverage implements ExtendedPlugInFilter, Dialog
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		gd = new GenericDialog("Moving Window Weighted Average...");
@@ -70,6 +72,7 @@ public class MovingWindowWeightedAverage implements ExtendedPlugInFilter, Dialog
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		radius = (int)gd.getNextNumber();
@@ -81,6 +84,7 @@ public class MovingWindowWeightedAverage implements ExtendedPlugInFilter, Dialog
 		return (radius >= 0 && !gd.invalidNumber());
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		float[] pixels = (float[])ip.getPixels();
@@ -241,6 +245,7 @@ public class MovingWindowWeightedAverage implements ExtendedPlugInFilter, Dialog
 
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

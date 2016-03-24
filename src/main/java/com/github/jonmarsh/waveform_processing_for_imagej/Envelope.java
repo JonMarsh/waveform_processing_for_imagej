@@ -27,6 +27,7 @@ public class Envelope implements ExtendedPlugInFilter, DialogListener
 	private static boolean logOutput = true;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING;
 	
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
@@ -44,6 +45,7 @@ public class Envelope implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command,  PlugInFilterRunner pfr)
 	{	    
 		gd = new GenericDialog("Envelope...");
@@ -60,6 +62,7 @@ public class Envelope implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 	
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 	    subtractMean = gd.getNextBoolean();
@@ -68,6 +71,7 @@ public class Envelope implements ExtendedPlugInFilter, DialogListener
 	    return true;
 	}
 	
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		// get pixel values of current processor
@@ -185,6 +189,7 @@ public class Envelope implements ExtendedPlugInFilter, DialogListener
 	   	}
 	}
     
+	@Override
 	public void setNPasses(int nPasses) {}
     
 }

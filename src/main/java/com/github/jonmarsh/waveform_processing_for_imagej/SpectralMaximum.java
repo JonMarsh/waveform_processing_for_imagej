@@ -41,6 +41,7 @@ public class SpectralMaximum implements ExtendedPlugInFilter, DialogListener
 	private static TextField windowParameterTextField;
     private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + FINAL_PROCESSING;
 	
+	@Override
     public int setup(String arg, ImagePlus imp) 
     {
         // perform final processing here
@@ -71,6 +72,7 @@ public class SpectralMaximum implements ExtendedPlugInFilter, DialogListener
         return flags;
     }	
 
+	@Override
     public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
     {
 		this.pfr = pfr;
@@ -90,6 +92,7 @@ public class SpectralMaximum implements ExtendedPlugInFilter, DialogListener
 		return flags;
     }
 
+	@Override
     public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
     {
 		deltaT = gd.getNextNumber();
@@ -101,6 +104,7 @@ public class SpectralMaximum implements ExtendedPlugInFilter, DialogListener
 		return (deltaT > 0.0 && !gd.invalidNumber());
     }
 
+	@Override
 	public void run(ImageProcessor ip) 
     {
         int currentSlice = pfr.getSliceNumber();
@@ -278,6 +282,7 @@ public class SpectralMaximum implements ExtendedPlugInFilter, DialogListener
 		return null;
 	}
 	
+	@Override
     public void setNPasses(int nPasses) {}
 	
 }

@@ -26,6 +26,7 @@ public class ButterworthFilter implements ExtendedPlugInFilter, DialogListener
 
 	int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
@@ -45,6 +46,7 @@ public class ButterworthFilter implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		this.pfr = pfr;
@@ -65,6 +67,7 @@ public class ButterworthFilter implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		filterChoiceIndex = gd.getNextChoiceIndex();
@@ -77,6 +80,7 @@ public class ButterworthFilter implements ExtendedPlugInFilter, DialogListener
 		return (numPoles >= 1 && samplingIntervalMicrosec > 0.0 && cutoffFreqMHz > 0.0 && !gd.invalidNumber());
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		float[] pixels = (float[])ip.getPixels();
@@ -178,6 +182,7 @@ public class ButterworthFilter implements ExtendedPlugInFilter, DialogListener
 		}
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

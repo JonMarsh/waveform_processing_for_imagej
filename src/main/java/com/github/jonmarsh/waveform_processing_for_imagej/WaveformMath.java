@@ -31,6 +31,7 @@ public class WaveformMath implements ExtendedPlugInFilter, DialogListener
 	private static int operationChoice = SUBTRACT;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
@@ -57,6 +58,7 @@ public class WaveformMath implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		gd = new GenericDialog("Waveform Math...");
@@ -74,6 +76,7 @@ public class WaveformMath implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		int id = gd.getNextChoiceIndex();
@@ -85,6 +88,7 @@ public class WaveformMath implements ExtendedPlugInFilter, DialogListener
 		return true;
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		float[] pixels = (float[]) ip.getPixels();
@@ -319,7 +323,7 @@ public class WaveformMath implements ExtendedPlugInFilter, DialogListener
 		int[] allIDs = WindowManager.getIDList();
 
 		// Populate an ArrayList with all open imageIDs that are a single waveform of the same length as the input waveforms
-		ArrayList<Integer> usableArrayList = new ArrayList<Integer>();
+		ArrayList<Integer> usableArrayList = new ArrayList<>();
 		for (int i : allIDs) {
 			ImagePlus currentImp = WindowManager.getImage(i);
 			if (currentImp.getWidth() == impToMatch.getWidth()
@@ -344,6 +348,7 @@ public class WaveformMath implements ExtendedPlugInFilter, DialogListener
 		}
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

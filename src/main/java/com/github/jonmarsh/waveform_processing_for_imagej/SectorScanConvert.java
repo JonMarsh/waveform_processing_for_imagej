@@ -50,6 +50,7 @@ public class SectorScanConvert implements ExtendedPlugInFilter
 	PlugInFilterRunner pfr;
 	int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp) 
 	{
 		if (arg.equals("final")) {	// do final processing here
@@ -94,6 +95,7 @@ public class SectorScanConvert implements ExtendedPlugInFilter
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) 
 	{
 		this.pfr = pfr;
@@ -145,6 +147,7 @@ public class SectorScanConvert implements ExtendedPlugInFilter
 		return flags;
 	}
 
+	@Override
 	public void run(ImageProcessor ip) 
 	{
 		ImageProcessor resized_ip;
@@ -189,6 +192,7 @@ public class SectorScanConvert implements ExtendedPlugInFilter
 		
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

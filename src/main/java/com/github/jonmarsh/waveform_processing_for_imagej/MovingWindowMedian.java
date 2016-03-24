@@ -32,6 +32,7 @@ public class MovingWindowMedian implements ExtendedPlugInFilter, DialogListener
 	private GenericDialog gd;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
@@ -49,6 +50,7 @@ public class MovingWindowMedian implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		gd = new GenericDialog("Moving Window Median...");
@@ -64,6 +66,7 @@ public class MovingWindowMedian implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		radius = (int)gd.getNextNumber();
@@ -71,6 +74,7 @@ public class MovingWindowMedian implements ExtendedPlugInFilter, DialogListener
 		return (radius >= 0 && !gd.invalidNumber());
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		float[] pixels = (float[])ip.getPixels();

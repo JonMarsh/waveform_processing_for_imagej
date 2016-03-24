@@ -22,17 +22,18 @@ import ij.util.Tools;
  */
 public class TextToImage implements ExtendedPlugInFilter, DialogListener
 {
-
 	private int width, height;
 	private NonBlockingGenericDialog gd;
 	private static String input;
 	private final int flags = DOES_ALL + NO_IMAGE_REQUIRED + NO_CHANGES;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		gd = new NonBlockingGenericDialog("Convert Text to Image");
@@ -53,11 +54,13 @@ public class TextToImage implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		return true;
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		String[] parsedRows = Tools.split(input, "\n\r");
@@ -77,12 +80,13 @@ public class TextToImage implements ExtendedPlugInFilter, DialogListener
 		for (int i = 0; i < height; i++) {
 			int offset = i * width;
 			for (int j = 0; j < entries[i].length; j++) {
-				pixels[offset + j] = (float) Tools.parseDouble(entries[i][j]);
+				pixels[offset + j] = (float)Tools.parseDouble(entries[i][j]);
 			}
 		}
 		textImage.show();
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

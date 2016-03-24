@@ -41,6 +41,7 @@ public class ZeroCrossingLocations implements ExtendedPlugInFilter, DialogListen
 	private PlugInFilterRunner pfr;
 	private final int flags = DOES_8G + DOES_16 + DOES_32 + CONVERT_TO_FLOAT + DOES_STACKS + PARALLELIZE_STACKS + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
@@ -68,6 +69,7 @@ public class ZeroCrossingLocations implements ExtendedPlugInFilter, DialogListen
 	}
 
 	// No dialog needed here, but we use it to access the PlugInFilterRunner for parallel processing
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		this.pfr = pfr;
@@ -83,6 +85,7 @@ public class ZeroCrossingLocations implements ExtendedPlugInFilter, DialogListen
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		interpolationChoice = gd.getNextChoiceIndex();
@@ -90,6 +93,7 @@ public class ZeroCrossingLocations implements ExtendedPlugInFilter, DialogListen
 		return true;
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		int currentSlice = pfr.getSliceNumber();
@@ -153,7 +157,7 @@ public class ZeroCrossingLocations implements ExtendedPlugInFilter, DialogListen
 				int offset = i * recordLength;
 
 				// initialize temporary ArrayList to hold roots
-				ArrayList<double[]> rootList = new ArrayList<double[]>();
+				ArrayList<double[]> rootList = new ArrayList<>();
 
 				switch (interpolationMethod) {
 
@@ -264,7 +268,7 @@ public class ZeroCrossingLocations implements ExtendedPlugInFilter, DialogListen
 				int offset = i * recordLength;
 
 				// initialize temporary ArrayList to hold roots
-				ArrayList<double[]> rootList = new ArrayList<double[]>();
+				ArrayList<double[]> rootList = new ArrayList<>();
 
 				switch (interpolationMethod) {
 
@@ -346,6 +350,7 @@ public class ZeroCrossingLocations implements ExtendedPlugInFilter, DialogListen
 		return null;
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

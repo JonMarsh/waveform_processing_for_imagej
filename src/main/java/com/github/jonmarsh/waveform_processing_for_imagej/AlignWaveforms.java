@@ -30,6 +30,7 @@ public class AlignWaveforms implements ExtendedPlugInFilter, DialogListener
 	private float[] seedWaveform;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (imp == null) {
@@ -50,6 +51,7 @@ public class AlignWaveforms implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		gd = new GenericDialog("Align Waveforms...");
@@ -67,6 +69,7 @@ public class AlignWaveforms implements ExtendedPlugInFilter, DialogListener
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		seedIndex = (int)gd.getNextNumber();
@@ -88,6 +91,7 @@ public class AlignWaveforms implements ExtendedPlugInFilter, DialogListener
 		return noError;
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		float[] pixels = (float[])ip.getPixels();
@@ -233,6 +237,7 @@ public class AlignWaveforms implements ExtendedPlugInFilter, DialogListener
 		}
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

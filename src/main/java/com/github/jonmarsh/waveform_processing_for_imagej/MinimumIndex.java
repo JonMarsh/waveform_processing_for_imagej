@@ -28,6 +28,7 @@ public class MinimumIndex implements ExtendedPlugInFilter
 	private PlugInFilterRunner pfr;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		// perform final processing here
@@ -58,6 +59,7 @@ public class MinimumIndex implements ExtendedPlugInFilter
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		// No dialog needed for this plugin, but this method allows access to the PlugInFilterRunner
@@ -66,6 +68,7 @@ public class MinimumIndex implements ExtendedPlugInFilter
 		return flags;
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		int currentSlice = pfr.getSliceNumber();
@@ -183,6 +186,7 @@ public class MinimumIndex implements ExtendedPlugInFilter
 		return null;
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

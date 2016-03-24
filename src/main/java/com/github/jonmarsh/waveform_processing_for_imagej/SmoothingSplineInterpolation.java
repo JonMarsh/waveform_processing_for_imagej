@@ -40,6 +40,7 @@ public class SmoothingSplineInterpolation implements ExtendedPlugInFilter, Dialo
 	private PlugInFilterRunner pfr;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING;
 
+	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
@@ -67,6 +68,7 @@ public class SmoothingSplineInterpolation implements ExtendedPlugInFilter, Dialo
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		this.pfr = pfr;
@@ -88,6 +90,7 @@ public class SmoothingSplineInterpolation implements ExtendedPlugInFilter, Dialo
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		interpolatedWidth = (int)gd.getNextNumber();
@@ -97,6 +100,7 @@ public class SmoothingSplineInterpolation implements ExtendedPlugInFilter, Dialo
 		return (stdev >= 0.0 && smoothingParameter >= 0.0 && interpolatedWidth >= 3);
 	}
 
+	@Override
 	public void run(ImageProcessor ip)
 	{
 		int currentSlice = pfr.getSliceNumber();
@@ -249,6 +253,7 @@ public class SmoothingSplineInterpolation implements ExtendedPlugInFilter, Dialo
 		return interpolatedWaveforms;
 	}
 
+	@Override
 	public void setNPasses(int nPasses)
 	{
 	}

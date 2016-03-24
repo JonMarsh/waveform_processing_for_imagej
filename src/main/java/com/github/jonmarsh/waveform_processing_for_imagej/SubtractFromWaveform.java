@@ -28,6 +28,7 @@ public class SubtractFromWaveform implements ExtendedPlugInFilter, DialogListene
 	private static int operationChoice = MEAN;
 	private final int flags = DOES_32 + DOES_STACKS + PARALLELIZE_STACKS + KEEP_PREVIEW + FINAL_PROCESSING;
 	
+	@Override
 	public int setup(String arg, ImagePlus imp) 
 	{
 		if (arg.equals("final")) {
@@ -45,6 +46,7 @@ public class SubtractFromWaveform implements ExtendedPlugInFilter, DialogListene
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr)
 	{
 		gd = new GenericDialog("Subtract From Waveform...");
@@ -60,6 +62,7 @@ public class SubtractFromWaveform implements ExtendedPlugInFilter, DialogListene
 		return flags;
 	}
 	
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e)
 	{
 		operationChoice = gd.getNextChoiceIndex();
@@ -67,6 +70,7 @@ public class SubtractFromWaveform implements ExtendedPlugInFilter, DialogListene
 		return true;
 	}
 		
+	@Override
 	public void run(ImageProcessor ip) 
 	{
 		float[] pixels = (float[])ip.getPixels();
@@ -263,5 +267,6 @@ public class SubtractFromWaveform implements ExtendedPlugInFilter, DialogListene
 
 	}
 
+	@Override
 	public void setNPasses(int nPasses) {}
 }
