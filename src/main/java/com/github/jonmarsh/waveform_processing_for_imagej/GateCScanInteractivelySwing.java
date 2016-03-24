@@ -70,9 +70,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 	int[] suitableImageIDs;
 	ImageProcessor gateProcessor;
 
-	/**
-	 * Run function required by PlugIn interface
-	 */
+	@Override
 	public void run(String arg)
 	{
 		if (instance == null) {
@@ -101,9 +99,6 @@ public class GateCScanInteractivelySwing implements PlugIn
 		}
 	}
 
-	/**
-	 * Inner class for interactive dialog gate creation
-	 */
 	private class CreateGatesForCScanDialog extends ImageWindow implements ActionListener, ImageListener
 	{
 
@@ -165,6 +160,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 		}
 
 		/* Respond to button press on front panel */
+		@Override
 		public void actionPerformed(ActionEvent e)
 		{
 			JButton source = (JButton)e.getSource();
@@ -185,7 +181,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 				
 				if (source == panel.createGatesButton) {
 					detectionMethodSelection = panel.detectionMethodComboBox.getSelectedIndex();
-					float[] gatePositions = computeGateStartPositionsForStack(stack, autoStartSearchPoint, offsetPoint, threshold, detectionMethodSelection);
+					float[] gatePositions = computeGateStartPositionsForStack(stack, autoStartSearchPoint, offsetPoint, threshold, detectionMethodSelection, searchBackwards);
 					gateProcessor.setPixels(gatePositions);
 					Overlay overlay = new Overlay(new Line(0, currentSlice - 1, recordsPerFrame, currentSlice - 1));
 					overlay.setStrokeColor(Color.red);
@@ -280,6 +276,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 		}
 
 		/* Respond to image being closed */
+		@Override
 		public void imageClosed(ImagePlus image)
 		{
 			if (image.getID() == inputImageID) {
@@ -301,6 +298,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 		}
 
 		/* Respond to image being opened */
+		@Override
 		public void imageOpened(ImagePlus image)
 		{
 			suitableImageIDs = getSuitableImageIDs(inputImage, gateImage);
@@ -311,6 +309,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 		}
 
 		/* Respond to current image being updated by scrolling through frames */
+		@Override
 		public void imageUpdated(ImagePlus image)
 		{
 			if (image.getID() == inputImageID) {
@@ -344,7 +343,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 			float[] gatedPixels = (float[]) gatedStack.getPixels(slice);
 			for (int i = 0; i < nRecords; i++) {
 				int gateIndex = ((slice - 1) * nRecords) + i;
-				if (gateStartPositions[gateIndex] < 0) { // gate position set to -1, so no boundary detected -- set all values to zero
+				if (gateStartPositions[gateIndex] < 0 || gateStartPositions[gateIndex] > nPoints-1) { // invalid gate, so no boundary detected -- set all values to zero
 					// new arrays are already initialized to zero, so nothing to do here
 				} else if (gateStartPositions[gateIndex] + gateLength >= nPoints && !searchBackwards) { // end of gate set past end of waveform, so just pad with zeroes
 					System.arraycopy(inputPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gatedPixels, i * gateLength, nPoints - (int)gateStartPositions[i]);
@@ -373,7 +372,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 			float[] gatedPixels = (float[]) gatedStack.getPixels(slice);
 			for (int i = 0; i < nRecords; i++) {
 				int gateIndex = ((slice - 1) * nRecords) + i;
-				if (gateStartPositions[gateIndex] < 0) { // gate position set to -1, so no boundary detected -- set all values to zero
+				if (gateStartPositions[gateIndex] < 0 || gateStartPositions[gateIndex] > nPoints-1) { // invalid gate, so no boundary detected -- set all values to zero
 					// new arrays are already initialized to zero, so nothing to do here
 				} else if (gateStartPositions[gateIndex] + gateLength >= nPoints && !searchBackwards) { // end of gate set past end of waveform, so just pad with zeroes
 					System.arraycopy(inputPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], gatedPixels, (i * nPoints) + (int)gateStartPositions[gateIndex], nPoints - (int)gateStartPositions[i]);
@@ -387,66 +386,9 @@ public class GateCScanInteractivelySwing implements PlugIn
 
 		return gatedImage;
 	}
-
-	/**
-	 * Substitute nearest valid gate start position for all positions where no
-	 * valid gates were detected. Employs Bresenham's circle algorithm, adapted
-	 * from implementation by Alois Zingl at
-	 * http://members.chello.at/easyfilter/bresenham.html
-	 */
-	private void nearestNeighborInterpolate(short[] gateStartPositions, int recordsPerFrame, int stackSize)
-	{
-		short[] interpolatedGateStartPositions = Arrays.copyOf(gateStartPositions, gateStartPositions.length);
-		int rMax = (int) Math.sqrt(recordsPerFrame * recordsPerFrame + stackSize * stackSize);
-		for (int y0 = 0; y0 < stackSize; y0++) {
-			int offset = y0 * recordsPerFrame;
-			for (int x0 = 0; x0 < recordsPerFrame; x0++) {
-				int position = gateStartPositions[offset + x0];
-				if (position < 0) {
-					// look for closest point that is not equal to -1 using Bresenham's circle algorithm
-					for (int radius = 1; radius <= rMax; radius++) {
-						int sum = 0, nValid = 0, r = radius, x = -r, y = 0, err = 2 - 2*r;
-						int[] px = new int[4];
-						int[] py = new int[4];
-						do {
-							px[0] = x0-x;
-							py[0] = y0+y;
-							px[1] = x0-y;
-							py[1] = y0-x;
-							px[2] = x0+x;
-							py[2] = y0-y;
-							px[3] = x0+y;
-							py[3] = y0+x;
-							for (int i=0; i<px.length; i++) {
-								if (px[i] >= 0 && px[i] < recordsPerFrame && py[i] >= 0 && py[i] < stackSize) {
-									short gateValue = gateStartPositions[py[i]*recordsPerFrame + px[i]];
-									if (gateValue >= 0) {
-										sum += gateValue;
-										nValid++;
-									}
-								}
-							}
-							r = err;
-							if (r <= y) {
-								err += ++y * 2 + 1;
-							}
-							if (r > x || err > y) {
-								err += ++x * 2 + 1;
-							}
-						} while (x < 0 && nValid == 0);
-						if (nValid > 0) {
-							interpolatedGateStartPositions[offset + x0] = (short) (sum / nValid);
-							break;
-						}
-					}
-				}
-			}
-		}
-		System.arraycopy(interpolatedGateStartPositions, 0, gateStartPositions, 0, gateStartPositions.length);
-	}
 	
 	/* Computes gate start positions for entire stack */
-	private float[] computeGateStartPositionsForStack(ImageStack stack, int searchStartPoint, int offsetPoint, float threshold, int detectionType)
+	private float[] computeGateStartPositionsForStack(ImageStack stack, int searchStartPoint, int offsetPoint, float threshold, int detectionType, boolean searchBackwards)
 	{
 		int nPoints = stack.getWidth();
 		int nRecords = stack.getHeight();
@@ -456,7 +398,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 
 		for (int slice = 1; slice <= stackSize; slice++) {
 			pixelValues = (float[]) stack.getProcessor(slice).convertToFloat().getPixels();
-			float[] sliceGates = computeGateStartPositions(pixelValues, nPoints, nRecords, searchStartPoint, offsetPoint, threshold, detectionType);
+			float[] sliceGates = computeGateStartPositions(pixelValues, nPoints, nRecords, searchStartPoint, offsetPoint, threshold, detectionType, searchBackwards);
 			System.arraycopy(sliceGates, 0, gateStartPositions, (slice - 1) * nRecords, nRecords);
 		}
 
@@ -464,7 +406,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 	}
 
 	/* Computes gate start positions for individual slice, assumed to be represented by data in 'pixels' */
-	private float[] computeGateStartPositions(float[] pixels, int recordLength, int numberOfRecords, int searchStartPoint, int offsetPoint, float threshold, int detectionType)
+	private float[] computeGateStartPositions(float[] pixels, int recordLength, int numberOfRecords, int searchStartPoint, int offsetPoint, float threshold, int detectionType, boolean searchBackwards)
 	{
 		float[] tempArray = new float[recordLength];
 		float[] gateStartPositions = new float[numberOfRecords];
@@ -496,7 +438,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 						break;
 					default:
 				}
-				gateStartPositions[i] = (gateStart >= 0) ? gateStart + offsetPoint + searchStartPoint : -1;
+				gateStartPositions[i] = (gateStart >= 0) ? gateStart + offsetPoint + searchStartPoint : recordLength;
 			}
 
 		}
@@ -515,15 +457,21 @@ public class GateCScanInteractivelySwing implements PlugIn
 	{
 		int direction = searchBackwards ? -1 : 1;
 		int length = gateStartPositions.length;
-		int[] xPoints = new int[length * 2];
-		int[] yPoints = new int[length * 2];
+		int[] xPoints = new int[length * 4];
+		int[] yPoints = new int[length * 4];
 		for (int i = 0; i < length; i++) {
-			xPoints[i] = (int)gateStartPositions[i];
-			xPoints[length + i] = (int)gateStartPositions[(length - 1) - i] + direction * gateLength;
-			yPoints[i] = i;
-			yPoints[length + i] = (length - 1) - i;
+			int j = i*2;
+			xPoints[j] = (int)gateStartPositions[i];
+			xPoints[j+1] = (int)gateStartPositions[i];
+			yPoints[j] = i;
+			yPoints[j+1] = (j/2)+1;			
 		}
-		return new PolygonRoi(new Polygon(xPoints, yPoints, length * 2), Roi.POLYGON);
+		for (int i=xPoints.length-1, j=0; i>=length*2; i--, j++) {
+			xPoints[i] = xPoints[j] + direction * gateLength;
+			yPoints[i] = yPoints[j];
+		}
+		
+		return new PolygonRoi(new Polygon(xPoints, yPoints, length * 4), Roi.POLYGON);
 	}
 
 	/* Returns the index of the first peak value found which exceeds the specified threshold. Returns -1 if no peaks above threshold are detected. */

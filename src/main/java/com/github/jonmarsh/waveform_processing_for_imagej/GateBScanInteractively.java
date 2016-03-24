@@ -68,6 +68,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 	private GenericDialog gd;
 	private final int flags = DOES_32 + FINAL_PROCESSING;
 	
+	@Override
 	public int setup(String arg, ImagePlus imp) 
 	{
 		if (arg.equals("final")) {
@@ -100,6 +101,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		return flags;
 	}
 
+	@Override
 	public int showDialog(ImagePlus ip, String string, PlugInFilterRunner pfr)
 	{
 		gd = new GenericDialog("Create B-Scan Gates for \""+imp.getTitle()+"\"");
@@ -131,6 +133,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		return flags;
 	}
 
+	@Override
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent awte)
 	{
 		autoStartSearchIndex = (int)gd.getNextNumber();
@@ -202,6 +205,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		
 	}
 	
+	@Override
 	public void run(ImageProcessor ip)
 	{		
 		// All this does is display a ROI showing gate/border values; the actual output is performed in the "final" processing step
@@ -313,7 +317,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 	{
 		float[] tempArray = new float[recordLength];
 		int[] gateStartPositions = new int[numberOfRecords];
-		ArrayList<Point> validGateStartPositions = new ArrayList<Point>();
+		ArrayList<Point> validGateStartPositions = new ArrayList<>();
 		
 		for (int i=0; i<numberOfRecords; i++) {
 			System.arraycopy(pixels, (i*recordLength)+searchStartPoint, tempArray, 0, recordLength-searchStartPoint);
@@ -498,7 +502,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		int height = numberOfRecords;
 		int thisID = imp.getID();
 		int[] fullList = WindowManager.getIDList();
-		ArrayList<String> matches = new ArrayList<String>(fullList.length);
+		ArrayList<String> matches = new ArrayList<>(fullList.length);
 		matches.add("Current image");
 		for (int i=0; i<fullList.length; i++) {
 			ImagePlus imp2 = WindowManager.getImage(fullList[i]);
