@@ -310,7 +310,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 			yPoints[j+1] = (j/2)+1;			
 		}
 		
-		return new PolygonRoi(xPoints, yPoints, gateStartPositions.length, Roi.POLYLINE);
+		return new PolygonRoi(xPoints, yPoints, 2*gateStartPositions.length, Roi.POLYLINE);
 	}
 
 	/* Generate single ROI for entire image */
