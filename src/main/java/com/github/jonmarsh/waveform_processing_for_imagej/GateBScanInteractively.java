@@ -378,7 +378,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 					gateStartPositions[i] = (recordLength-1) - gateStartPositions[i];
 				}
 			} else { // if no valid gate point was found, set to position just outside array
-				gateStartPositions[i] = searchBackwards ? recordLength : -1;
+				gateStartPositions[i] = searchBackwards ? -1 : recordLength;
 			}
 
 		}
