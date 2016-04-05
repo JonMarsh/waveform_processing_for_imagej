@@ -55,9 +55,9 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 	private static final int SINGLE_ROI = 0, MULTIPLE_ROIS = 1, BORDER_LINE_ROI = 2;
 	private static final String[] roiOutputTypes = {"Gated region (polygon ROI)", "Gated region (multiple line ROIs)", "Border line ROI"};
 	private static int roiOutputChoice = MULTIPLE_ROIS;
-	private static final int NO_SIGNAL_OUTPUT = 0, GATED_SEGMENTS = 1, GATED_WAVEFORMS = 2;
-	private static final String[] signalOutputTypes = {"None", "Gated segments", "Gated waveforms"};
-	private static int signalOutputChoice = NO_SIGNAL_OUTPUT;
+	private static boolean outputGatedSegments = false, outputGatedWaveforms = false, outputGatePositions = false;
+	private static boolean[] outputSelections = new boolean[] {outputGatedSegments, outputGatedWaveforms, outputGatePositions};
+	private static final String[] dataOutputTypes = {"Gated_segments", "Gated_waveforms", "Gate_positions"};
 	private static boolean isWindowFunctionApplied = false;
 	private static final String[] windowTypes = WaveformUtils.WindowType.stringValues();
 	private static int windowChoice = WaveformUtils.WindowType.HAMMING.ordinal();
@@ -66,7 +66,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 	private TextField windowParameterTextField;
 	private int altImageIndex = 0;
 	private GenericDialog gd;
-	private final int flags = DOES_32 + FINAL_PROCESSING;
+	private final int flags = DOES_32 + FINAL_PROCESSING + NO_CHANGES;
 	
 	@Override
 	public int setup(String arg, ImagePlus imp) 
@@ -100,7 +100,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 			WaveformUtils.reverseArrayInPlace(reversedPixels, i*recordLength, (i+1)*recordLength);
 		}
 		gatePositions = new int[numberOfRecords];
-		suitableImageTitles = getMatchingImages();		
+		suitableImageTitles = getMatchingImages();
 				
 		return flags;
 	}
@@ -113,18 +113,20 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		gd.addNumericField("Start search at index", autoStartSearchIndex, 0, 8, "");
 		gd.addNumericField("Offset from detected border", offsetIndex, 0, 8, "points");
 		gd.addNumericField("Threshold", threshold, 3, 8, "");
-		gd.addNumericField("Gate length", gateLengthPoints, 0, 8, "points");
+		gd.addNumericField("Gate_length", gateLengthPoints, 0, 8, "points");
 		gd.addChoice("Detection method:", detectionTypes, detectionTypes[detectionType]);
+		gd.setInsets(0, 20, 0);
 		gd.addCheckbox("Reverse search", searchBackwards);
-		gd.addNumericField("Smoothing radius", smoothingRadius, 0, 8, "points");
 		gd.addChoice("ROI output:", roiOutputTypes, roiOutputTypes[roiOutputChoice]);
-		gd.addChoice("Apply gates to:", suitableImageTitles, suitableImageTitles[altImageIndex]);
-		gd.addChoice("Signal output:", signalOutputTypes, signalOutputTypes[signalOutputChoice]);
-		gd.addCheckbox("Apply window function", isWindowFunctionApplied);
-		gd.addChoice("Window type:", windowTypes, windowTypes[windowChoice]);
-		windowTypeComboBox = (Choice)(gd.getChoices().get(4));
+		gd.addNumericField("Smoothing radius", smoothingRadius, 0, 8, "points");
+		gd.addChoice("Apply_gates_to:", suitableImageTitles, suitableImageTitles[altImageIndex]);
+		gd.setInsets(10, 20, 15);
+		gd.addCheckboxGroup(dataOutputTypes.length, 1, dataOutputTypes, outputSelections, new String[]{"Data output"});
+		gd.addCheckbox("Apply_window_function", isWindowFunctionApplied);
+		gd.addChoice("Window_type:", windowTypes, windowTypes[windowChoice]);
+		windowTypeComboBox = (Choice)(gd.getChoices().get(3));
 		windowTypeComboBox.setEnabled(isWindowFunctionApplied);
-		gd.addNumericField("Window parameter", windowParameter, 3, 8, "");
+		gd.addNumericField("Window_parameter", windowParameter, 3, 8, "");
 		windowParameterTextField = (TextField)(gd.getNumericFields().get(5));
 		windowParameterTextField.setEnabled(isWindowFunctionApplied && WaveformUtils.WindowType.values()[windowChoice].usesParameter());
 		gd.addPreviewCheckbox(pfr);
@@ -150,7 +152,9 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		roiOutputChoice = gd.getNextChoiceIndex();
 		smoothingRadius = (int)gd.getNextNumber();
 		altImageIndex = gd.getNextChoiceIndex();
-		signalOutputChoice = gd.getNextChoiceIndex();
+		outputGatedSegments = outputSelections[0] = gd.getNextBoolean();
+		outputGatedWaveforms = outputSelections[1] = gd.getNextBoolean(); 
+		outputGatePositions = outputSelections[2] = gd.getNextBoolean(); 
 		isWindowFunctionApplied = gd.getNextBoolean();
 		windowChoice = gd.getNextChoiceIndex();
 		windowParameter = gd.getNextNumber();
@@ -182,21 +186,33 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		}
 
 		if (roiOutputChoice != BORDER_LINE_ROI) { // Don't output any waveforms if a border ROI is desired
-			if (signalOutputChoice == GATED_SEGMENTS) {
-				ImagePlus gatedImage = IJ.createImage(altImage.getTitle()+" gated segments", "32-bit", gateLengthPoints, numberOfRecords, 1);
-				ImageProcessor gatedImageProcessor = gatedImage.getProcessor();
-				float[] gatedPixels = gateSegments(altImage, gatePositions, gateLengthPoints, weights, searchBackwards);
-				gatedImageProcessor.setPixels(gatedPixels);
-				gatedImage.show();
+			if (outputGatedSegments) {
+				ImagePlus gatedSegmentImage = IJ.createImage(altImage.getTitle()+" gated segments", "32-bit", gateLengthPoints, numberOfRecords, 1);
+				ImageProcessor gatedSegmentImageProcessor = gatedSegmentImage.getProcessor();
+				float[] gatedSegmentPixels = gateSegments(altImage, gatePositions, gateLengthPoints, weights, searchBackwards);
+				gatedSegmentImageProcessor.setPixels(gatedSegmentPixels);
+				gatedSegmentImage.show();
 				IJ.resetMinAndMax();
-			} else if (signalOutputChoice == GATED_WAVEFORMS) {
-				ImagePlus gatedImage = IJ.createImage(altImage.getTitle() + " gated waveforms", "32-bit", recordLength, numberOfRecords, 1);
-				ImageProcessor gatedImageProcessor = gatedImage.getProcessor();
-				float[] gatedPixels = gateWaveforms(altImage, gatePositions, gateLengthPoints, weights, searchBackwards);
-				gatedImageProcessor.setPixels(gatedPixels);
-				gatedImage.show();
+			}
+			if (outputGatedWaveforms) {
+				ImagePlus gatedWaveformImage = IJ.createImage(altImage.getTitle() + " gated waveforms", "32-bit", recordLength, numberOfRecords, 1);
+				ImageProcessor gatedWaveformImageProcessor = gatedWaveformImage.getProcessor();
+				float[] gatedWaveformPixels = gateWaveforms(altImage, gatePositions, gateLengthPoints, weights, searchBackwards);
+				gatedWaveformImageProcessor.setPixels(gatedWaveformPixels);
+				gatedWaveformImage.show();
 				IJ.resetMinAndMax();			
 			}
+		}
+		
+		if (outputGatePositions) {
+			ImagePlus gatePositionImage = IJ.createImage(altImage.getTitle()+" gate positions", "32-bit", numberOfRecords, 1, 1);
+			ImageProcessor gatePositionProcessor = gatePositionImage.getProcessor();
+			float[] gatePositionPixels = (float[])gatePositionProcessor.getPixels();
+			for (int i=0; i<gatePositions.length; i++) {
+				gatePositionPixels[i] = (float)gatePositions[i];
+			}
+			gatePositionImage.show();
+			IJ.resetMinAndMax();
 		}
 		
 		RoiManager rm = RoiManager.getInstance();
