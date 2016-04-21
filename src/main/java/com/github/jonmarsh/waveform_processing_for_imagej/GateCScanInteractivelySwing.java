@@ -247,6 +247,7 @@ public class GateCScanInteractivelySwing implements PlugIn
 								WindowManager.getImage(inputImageID).setSlice(i + 1);
 								float[] gatePositionsForThisSlice = Arrays.copyOfRange(gatePositions, i * recordsPerFrame, (i + 1) * recordsPerFrame);
 								PolygonRoi roi = createSingleROI(gatePositionsForThisSlice, gateLength, searchBackwards);
+								roi.setPosition(i+1);
 								rm.add(WindowManager.getImage(inputImageID), roi, -1);
 							}
 						}
@@ -477,29 +478,38 @@ public class GateCScanInteractivelySwing implements PlugIn
 	/* Returns the index of the first peak value found which exceeds the specified threshold. Returns -1 if no peaks above threshold are detected. */
 	private int peakDetect(float[] a, float threshold)
 	{
-		int i;
-
-		for (i = 1; i < a.length - 1; i++) {
-			if (a[i] > threshold && a[i - 1] < a[i] && a[i + 1] < a[i]) {
-				break;
+		int inflectionPoint = -1;
+		float previousValue = a[0];
+		float currentValue = a[1];
+		for (int i = 1; i < a.length - 1; i++) {
+			float nextValue = a[i + 1];
+			if (currentValue > threshold) {
+				if (currentValue > previousValue && currentValue >= nextValue) {
+					inflectionPoint = i;
+				}
+				if (currentValue >= previousValue && currentValue > nextValue) {
+					if (i >= inflectionPoint) {
+						return (inflectionPoint + i) / 2;
+					}
+				}
 			}
+			previousValue = currentValue;
+			currentValue = nextValue;
 		}
 
-		return (i >= a.length - 2) ? -1 : i;
+		return -1;
 	}
 	
 	/* Returns the index of the first value found which exceeds the specified threshold. Returns -1 if no peaks above threshold are detected */
 	private int thresholdDetect(float[] a, float threshold)
 	{
-		int i;
-		
-		for (i=1; i<a.length-1; i++) {
-			if (a[i] > threshold) {
-				break;
+		for (int i = 0; i < a.length - 1; i++) {
+			if (a[i] <= threshold && a[i + 1] > threshold) {
+				return i + 1;
 			}
 		}
-		
-		return (i >= a.length - 2) ? -1 : i;
+
+		return -1;
 	}
 	
 	private int[] getSuitableImageIDs(ImagePlus impToCheckAgainst, ImagePlus gateImage)

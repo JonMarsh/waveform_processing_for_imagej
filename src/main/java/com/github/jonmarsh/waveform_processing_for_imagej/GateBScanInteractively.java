@@ -29,12 +29,11 @@ import java.util.Arrays;
  * segments, the original waveforms set to zero outside the gates, a single ROI
  * corresponding to the gated portion of each individual record, a single
  * polygon ROI that encircles each all gated regions, or a single polyline ROI
- * that follows the detected border.  The output gates can be applied to the 
+ * that follows the detected border. The output gates can be applied to the
  * input image, or a different image with the same dimensions.
-  * 
+ *
  * @author Jon N. Marsh
  */
-
 public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListener
 {
 	private ImagePlus imp, altImage;
@@ -56,60 +55,60 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 	private static final String[] roiOutputTypes = {"Gated region (polygon ROI)", "Gated region (multiple line ROIs)", "Border line ROI"};
 	private static int roiOutputChoice = MULTIPLE_ROIS;
 	private static boolean outputGatedSegments = false, outputGatedWaveforms = false, outputGatePositions = false;
-	private static boolean[] outputSelections = new boolean[] {outputGatedSegments, outputGatedWaveforms, outputGatePositions};
+	private static boolean[] outputSelections = new boolean[]{outputGatedSegments, outputGatedWaveforms, outputGatePositions};
 	private static final String[] dataOutputTypes = {"Gated_segments", "Gated_waveforms", "Gate_positions"};
 	private static boolean isWindowFunctionApplied = false;
 	private static final String[] windowTypes = WaveformUtils.WindowType.stringValues();
 	private static int windowChoice = WaveformUtils.WindowType.HAMMING.ordinal();
-	private Choice windowTypeComboBox; 
+	private Choice windowTypeComboBox;
 	private static double windowParameter = 0.5;
 	private TextField windowParameterTextField;
 	private int altImageIndex = 0;
 	private GenericDialog gd;
 	private final int flags = DOES_32 + FINAL_PROCESSING + NO_CHANGES;
-	
+
 	@Override
-	public int setup(String arg, ImagePlus imp) 
+	public int setup(String arg, ImagePlus imp)
 	{
 		if (arg.equals("final")) {
 			doFinalProcessing();
 			return DONE;
 		}
-		
+
 		this.imp = imp;
 		if (imp == null) {
 			IJ.noImage();
 			return DONE;
 		}
-		
+
 		if (imp.getType() != ImagePlus.GRAY32) {
 			IJ.error("Image must be 32-bit grayscale");
 			return DONE;
 		}
-		
+
 		if (imp.getRoi() != null) {
 			imp.setRoi(0, 0, 0, 0);
 		}
-		
+
 		processor = imp.getProcessor();
 		recordLength = imp.getWidth();
 		numberOfRecords = imp.getHeight();
 		pixels = (float[])processor.getPixelsCopy();
 		reversedPixels = Arrays.copyOf(pixels, pixels.length);
-		for (int i=0; i<numberOfRecords; i++) {
-			WaveformUtils.reverseArrayInPlace(reversedPixels, i*recordLength, (i+1)*recordLength);
+		for (int i = 0; i < numberOfRecords; i++) {
+			WaveformUtils.reverseArrayInPlace(reversedPixels, i * recordLength, (i + 1) * recordLength);
 		}
 		gatePositions = new int[numberOfRecords];
 		suitableImageTitles = getMatchingImages();
-				
+
 		return flags;
 	}
 
 	@Override
 	public int showDialog(ImagePlus ip, String string, PlugInFilterRunner pfr)
-	{		
-		gd = new GenericDialog("Create B-Scan Gates for \""+imp.getTitle()+"\"");
-		
+	{
+		gd = new GenericDialog("Create B-Scan Gates for \"" + imp.getTitle() + "\"");
+
 		gd.addNumericField("Start search at index", autoStartSearchIndex, 0, 8, "");
 		gd.addNumericField("Offset from detected border", offsetIndex, 0, 8, "points");
 		gd.addNumericField("Threshold", threshold, 3, 8, "");
@@ -131,12 +130,12 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		windowParameterTextField.setEnabled(isWindowFunctionApplied && WaveformUtils.WindowType.values()[windowChoice].usesParameter());
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
-		
+
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			return DONE;
 		}
-	
+
 		return flags;
 	}
 
@@ -146,29 +145,29 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		autoStartSearchIndex = (int)gd.getNextNumber();
 		offsetIndex = (int)gd.getNextNumber();
 		threshold = (float)gd.getNextNumber();
-		gateLengthPoints = (int)gd.getNextNumber();		
+		gateLengthPoints = (int)gd.getNextNumber();
 		detectionType = gd.getNextChoiceIndex();
 		searchBackwards = gd.getNextBoolean();
 		roiOutputChoice = gd.getNextChoiceIndex();
 		smoothingRadius = (int)gd.getNextNumber();
 		altImageIndex = gd.getNextChoiceIndex();
 		outputGatedSegments = outputSelections[0] = gd.getNextBoolean();
-		outputGatedWaveforms = outputSelections[1] = gd.getNextBoolean(); 
-		outputGatePositions = outputSelections[2] = gd.getNextBoolean(); 
+		outputGatedWaveforms = outputSelections[1] = gd.getNextBoolean();
+		outputGatePositions = outputSelections[2] = gd.getNextBoolean();
 		isWindowFunctionApplied = gd.getNextBoolean();
 		windowChoice = gd.getNextChoiceIndex();
 		windowParameter = gd.getNextNumber();
-		
+
 		windowTypeComboBox.setEnabled(isWindowFunctionApplied);
 		windowParameterTextField.setEnabled(isWindowFunctionApplied && WaveformUtils.WindowType.values()[windowChoice].usesParameter());
-		
-		return (!gd.invalidNumber() 
-				&& (autoStartSearchIndex >= 0 && autoStartSearchIndex < recordLength-1)
-				&& (gateLengthPoints > 0 && gateLengthPoints <= recordLength )
+
+		return (!gd.invalidNumber()
+				&& (autoStartSearchIndex >= 0 && autoStartSearchIndex < recordLength - 1)
+				&& (gateLengthPoints > 0 && gateLengthPoints <= recordLength)
 				&& (smoothingRadius >= 0 && smoothingRadius <= numberOfRecords));
 
 	}
-		
+
 	private void doFinalProcessing()
 	{
 		if (altImageIndex != 0) {
@@ -176,7 +175,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		} else {
 			altImage = imp;
 		}
-		
+
 		float[] weights;
 		if (isWindowFunctionApplied) {
 			weights = Tools.toFloat(WaveformUtils.windowFunction(WaveformUtils.WindowType.values()[windowChoice], gateLengthPoints, windowParameter, false));
@@ -187,7 +186,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 
 		if (roiOutputChoice != BORDER_LINE_ROI) { // Don't output any waveforms if a border ROI is desired
 			if (outputGatedSegments) {
-				ImagePlus gatedSegmentImage = IJ.createImage(altImage.getTitle()+" gated segments", "32-bit", gateLengthPoints, numberOfRecords, 1);
+				ImagePlus gatedSegmentImage = IJ.createImage(altImage.getTitle() + " gated segments", "32-bit", gateLengthPoints, numberOfRecords, 1);
 				ImageProcessor gatedSegmentImageProcessor = gatedSegmentImage.getProcessor();
 				float[] gatedSegmentPixels = gateSegments(altImage, gatePositions, gateLengthPoints, weights, searchBackwards);
 				gatedSegmentImageProcessor.setPixels(gatedSegmentPixels);
@@ -200,21 +199,21 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 				float[] gatedWaveformPixels = gateWaveforms(altImage, gatePositions, gateLengthPoints, weights, searchBackwards);
 				gatedWaveformImageProcessor.setPixels(gatedWaveformPixels);
 				gatedWaveformImage.show();
-				IJ.resetMinAndMax();			
+				IJ.resetMinAndMax();
 			}
 		}
-		
+
 		if (outputGatePositions) {
-			ImagePlus gatePositionImage = IJ.createImage(altImage.getTitle()+" gate positions", "32-bit", numberOfRecords, 1, 1);
+			ImagePlus gatePositionImage = IJ.createImage(altImage.getTitle() + " gate positions", "32-bit", numberOfRecords, 1, 1);
 			ImageProcessor gatePositionProcessor = gatePositionImage.getProcessor();
 			float[] gatePositionPixels = (float[])gatePositionProcessor.getPixels();
-			for (int i=0; i<gatePositions.length; i++) {
+			for (int i = 0; i < gatePositions.length; i++) {
 				gatePositionPixels[i] = (float)gatePositions[i];
 			}
 			gatePositionImage.show();
 			IJ.resetMinAndMax();
 		}
-		
+
 		RoiManager rm = RoiManager.getInstance();
 		if (rm == null) {
 			rm = new RoiManager();
@@ -224,19 +223,18 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		} else {
 			rm.add(imp, imp.getRoi(), -1);
 		}
-		
+
 	}
-	
+
 	@Override
 	public void run(ImageProcessor ip)
-	{		
+	{
 		// All this does is display a ROI showing gate/border values; the actual output is performed in the "final" processing step
 		gatePositions = medianFilter1D(computeGateStartPositions(pixels, reversedPixels, recordLength, numberOfRecords, autoStartSearchIndex, offsetIndex, threshold, searchBackwards), smoothingRadius, -1);
-		if (roiOutputChoice == BORDER_LINE_ROI) {	
+		if (roiOutputChoice == BORDER_LINE_ROI) {
 			PolygonRoi roi = createBorderROI(gatePositions);
 			imp.setRoi(roi);
-		}
-		else {
+		} else {
 			PolygonRoi roi = createSingleROI(gatePositions, gateLengthPoints, searchBackwards);
 			imp.setRoi(roi);
 		}
@@ -253,28 +251,28 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 
 		for (int i = 0; i < h; i++) {
 			int gateStart = gateStartPositions[i];
-			int rowOffset1 = i*w;
-			int rowOffset2 = i*gateLength;
-			if (gateStart < 0 || gateStart > w-1) { // invalid gate, so no boundary detected -- set all values to NaN)
-				for (int j=0; j<gateLength; j++) {
+			int rowOffset1 = i * w;
+			int rowOffset2 = i * gateLength;
+			if (gateStart < 0 || gateStart > w - 1) { // invalid gate, so no boundary detected -- set all values to NaN)
+				for (int j = 0; j < gateLength; j++) {
 					// array already initialized to NaN, so nothing to do
 				}
 			} else if (gateStart + gateLength > w && !searchBackwards) { // end of gate set past end of waveform, so pad with NaN
-				for (int j=0; j<w-gateStart; j++) {
-					gatedArray[rowOffset2+j] = weights[j]*pix[rowOffset1+gateStart+j];
+				for (int j = 0; j < w - gateStart; j++) {
+					gatedArray[rowOffset2 + j] = weights[j] * pix[rowOffset1 + gateStart + j];
 				}
-			} else if (gateStart < (gateLength-1) && searchBackwards) { // beginning of gate set past beginning of waveform, so pad with zeroes
-				for (int j=0; j<gateStart+1; j++) {
-					gatedArray[rowOffset2+(gateLength-(gateStart+1))+j] = weights[gateLength-(gateStart+1)+j]*pix[rowOffset1+j];
+			} else if (gateStart < (gateLength - 1) && searchBackwards) { // beginning of gate set past beginning of waveform, so pad with zeroes
+				for (int j = 0; j < gateStart + 1; j++) {
+					gatedArray[rowOffset2 + (gateLength - (gateStart + 1)) + j] = weights[gateLength - (gateStart + 1) + j] * pix[rowOffset1 + j];
 				}
 			} else { // gate is within waveform limits
-				int start = searchBackwards ? gateStart-gateLength+1 : gateStart;
-				for (int j=0; j<gateLength; j++) {
-					gatedArray[rowOffset2+j] = weights[j]*pix[rowOffset1+start+j];
+				int start = searchBackwards ? gateStart - gateLength + 1 : gateStart;
+				for (int j = 0; j < gateLength; j++) {
+					gatedArray[rowOffset2 + j] = weights[j] * pix[rowOffset1 + start + j];
 				}
 			}
 		}
-		
+
 		return gatedArray;
 	}
 
@@ -285,33 +283,33 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		int h = imp.getHeight();
 		int w = imp.getWidth();
 		float[] gatedArray = new float[h * w];
-		
+
 		for (int i = 0; i < h; i++) {
 			int gateStart = gateStartPositions[i];
-			int rowOffset = i*w;
-			if (gateStart < 0 || gateStart > w-1) { // invalid gate, so no boundary detected -- set all values to zero)
-				for (int j=0; j<gateLength; j++) {
+			int rowOffset = i * w;
+			if (gateStart < 0 || gateStart > w - 1) { // invalid gate, so no boundary detected -- set all values to zero)
+				for (int j = 0; j < gateLength; j++) {
 					// array already initialized to zero, so nothing to do
 				}
 			} else if (gateStart + gateLength > w && !searchBackwards) { // end of gate set past end of waveform, so just pad with zeroes
-				for (int j=0; j<w-gateStart; j++) {
-					gatedArray[rowOffset+gateStart+j] = weights[j]*pix[rowOffset+gateStart+j];
+				for (int j = 0; j < w - gateStart; j++) {
+					gatedArray[rowOffset + gateStart + j] = weights[j] * pix[rowOffset + gateStart + j];
 				}
-			} else if (gateStart < (gateLength-1) && searchBackwards) { // beginning of gate set past beginning of waveform, so pad with zeroes
-				for (int j=0; j<gateStart+1; j++) {
-					gatedArray[rowOffset+j] = weights[(gateLength-gateStart-1)+j]*pix[rowOffset+j];
+			} else if (gateStart < (gateLength - 1) && searchBackwards) { // beginning of gate set past beginning of waveform, so pad with zeroes
+				for (int j = 0; j < gateStart + 1; j++) {
+					gatedArray[rowOffset + j] = weights[(gateLength - gateStart - 1) + j] * pix[rowOffset + j];
 				}
 			} else { // gate is within waveform limits
-				int start = searchBackwards ? gateStart-gateLength+1 : gateStart;
+				int start = searchBackwards ? gateStart - gateLength + 1 : gateStart;
 				for (int j = 0; j < gateLength; j++) {
 					gatedArray[rowOffset + start + j] = weights[j] * pix[rowOffset + start + j];
 				}
 			}
 		}
-		
+
 		return gatedArray;
 	}
-	
+
 	/* Generate border line ROI */
 	private PolygonRoi createBorderROI(int[] gateStartPositions)
 	{
@@ -319,14 +317,14 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		int[] xPoints = new int[length * 2];
 		int[] yPoints = new int[length * 2];
 		for (int i = 0; i < length; i++) {
-			int j = i*2;
+			int j = i * 2;
 			xPoints[j] = gateStartPositions[i];
-			xPoints[j+1] = gateStartPositions[i];
+			xPoints[j + 1] = gateStartPositions[i];
 			yPoints[j] = i;
-			yPoints[j+1] = (j/2)+1;			
+			yPoints[j + 1] = (j / 2) + 1;
 		}
-		
-		return new PolygonRoi(xPoints, yPoints, 2*gateStartPositions.length, Roi.POLYLINE);
+
+		return new PolygonRoi(xPoints, yPoints, 2 * gateStartPositions.length, Roi.POLYLINE);
 	}
 
 	/* Generate single ROI for entire image */
@@ -337,30 +335,30 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		int[] xPoints = new int[length * 4];
 		int[] yPoints = new int[length * 4];
 		for (int i = 0; i < length; i++) {
-			int j = i*2;
+			int j = i * 2;
 			xPoints[j] = gateStartPositions[i];
-			xPoints[j+1] = gateStartPositions[i];
+			xPoints[j + 1] = gateStartPositions[i];
 			yPoints[j] = i;
-			yPoints[j+1] = (j/2)+1;			
+			yPoints[j + 1] = (j / 2) + 1;
 		}
-		for (int i=xPoints.length-1, j=0; i>=length*2; i--, j++) {
+		for (int i = xPoints.length - 1, j = 0; i >= length * 2; i--, j++) {
 			xPoints[i] = xPoints[j] + offset;
 			yPoints[i] = yPoints[j];
 		}
-		
+
 		return new PolygonRoi(new Polygon(xPoints, yPoints, length * 4), Roi.POLYGON);
 	}
-	
+
 	/* Generate ROIs for individual lines and add to RoiManager */
 	private void generateMultipleLineROIs(RoiManager rm, int[] gateStartPositions, int gateLength, boolean searchBackwards)
 	{
 		int length = gateStartPositions.length;
-		for (int i=0; i<length; i++) {
+		for (int i = 0; i < length; i++) {
 			int start = searchBackwards ? (gateStartPositions[i] - gateLength) + 1 : gateStartPositions[i];
 			rm.addRoi(new Roi(start, i, gateLength, 1));
 		}
 	}
-	
+
 	/* Computes gate start positions */
 	private int[] computeGateStartPositions(float[] pixels, float[] reversedPixels, int recordLength, int numberOfRecords, int searchStartPoint, int offsetPoint, float threshold, boolean searchBackwards)
 	{
@@ -391,7 +389,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 			if (gateStart >= 0) { // valid gate point
 				gateStartPositions[i] = gateStart + offsetPoint + searchStartPoint;
 				if (searchBackwards) {
-					gateStartPositions[i] = (recordLength-1) - gateStartPositions[i];
+					gateStartPositions[i] = (recordLength - 1) - gateStartPositions[i];
 				}
 			} else { // if no valid gate point was found, set to position just outside array
 				gateStartPositions[i] = searchBackwards ? -1 : recordLength;
@@ -405,78 +403,104 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 	/* Returns the index of the first maximum peak value found which exceeds the specified threshold.  Returns -1 if no peaks above threshold are detected. */
 	private int peakDetectMaximum(float[] a, float threshold)
 	{
-		for (int i=1; i<a.length-1; i++) {
-			if (a[i] > threshold && a[i-1] < a[i] && a[i+1] < a[i]) {
-				return i;
+		int inflectionPoint = -1;
+		float previousValue = a[0];
+		float currentValue = a[1];
+		for (int i = 1; i < a.length - 1; i++) {
+			float nextValue = a[i + 1];
+			if (currentValue > threshold) {
+				if (currentValue > previousValue && currentValue >= nextValue) {
+					inflectionPoint = i;
+				}
+				if (currentValue >= previousValue && currentValue > nextValue) {
+					if (i >= inflectionPoint) {
+						return (inflectionPoint + i) / 2;
+					}
+				}
 			}
+			previousValue = currentValue;
+			currentValue = nextValue;
 		}
-		
+
 		return -1;
 	}
 
 	/* Returns the index of the first minimum peak value found which is less than the specified threshold.  Returns -1 if no peaks below threshold are detected. */
 	private int peakDetectMinimum(float[] a, float threshold)
 	{
-		for (int i=1; i<a.length-1; i++) {
-			if (a[i] < threshold && a[i-1] > a[i] && a[i+1] > a[i]) {
-				return i;
+		int p = -1;
+		float previousValue = a[0];
+		float currentValue = a[1];
+		for (int i = 1; i < a.length - 1; i++) {
+			float nextValue = a[i + 1];
+			if (currentValue < threshold) {
+				if (currentValue < previousValue && currentValue <= nextValue) {
+					p = i;
+				}
+				if (currentValue <= previousValue && currentValue < nextValue) {
+					if (i >= p) {
+						return (p + i) / 2;
+					}
+				}
 			}
+			previousValue = currentValue;
+			currentValue = nextValue;
 		}
-		
+
 		return -1;
 	}
 
 	/* Returns the index of the first point which exceeds the specified threshold.  Returns -1 if no values above threshold are detected. */
 	private int thresholdDetectPositive(float[] a, float threshold)
 	{
-		for (int i=0; i<a.length-1; i++) {
-			if (a[i]<=threshold && a[i+1]>threshold) {
-				return i+1;
+		for (int i = 0; i < a.length - 1; i++) {
+			if (a[i] <= threshold && a[i + 1] > threshold) {
+				return i + 1;
 			}
 		}
-		
+
 		return -1;
 	}
 
 	/* Returns the index of the first point which is less than the specified threshold.  Returns -1 if no values below threshold are detected. */
 	private int thresholdDetectNegative(float[] a, float threshold)
 	{
-		for (int i=0; i<a.length-1; i++) {
-			if (a[i]>=threshold && a[i+1]<threshold) {
-				return i+1;
+		for (int i = 0; i < a.length - 1; i++) {
+			if (a[i] >= threshold && a[i + 1] < threshold) {
+				return i + 1;
 			}
 		}
-		
+
 		return -1;
 	}
 
 	private int[] medianFilter1D(int[] a, int radius, int valueToIgnore)
 	{
 		int[] filteredArray = new int[a.length];
-		
+
 		if (radius > 0) {
-			for (int i=0; i<a.length; i++) {
+			for (int i = 0; i < a.length; i++) {
 				filteredArray[i] = getMedianValueAtIndex(a, i, radius, valueToIgnore);
 			}
 		} else {
 			System.arraycopy(a, 0, filteredArray, 0, a.length);
 		}
-		
+
 		return filteredArray;
 	}
 
 	private int getMedianValueAtIndex(int[] a, int index, int radius, int valueToIgnore)
 	{
-		int minIndex = Math.max(0, index-radius);
-		int maxIndex = Math.min(a.length-1, index+radius);
-		int span = (maxIndex-minIndex)+1;
+		int minIndex = Math.max(0, index - radius);
+		int maxIndex = Math.min(a.length - 1, index + radius);
+		int span = (maxIndex - minIndex) + 1;
 		int[] temp = new int[span];
 		ArrayList<Integer> v = new ArrayList<>();
 
 		System.arraycopy(a, minIndex, temp, 0, span);
 		Arrays.sort(temp);
 
-		for (int i=0; i<span; i++) {
+		for (int i = 0; i < span; i++) {
 			if (temp[i] != valueToIgnore) {
 				v.add(temp[i]);
 			}
@@ -484,17 +508,14 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 
 		int size = v.size();
 		if (size == 1) {
-			return(v.get(0));
-		}
-		else if (size%2 == 1) {
-			return(v.get((size-1)/2));
-		}
-		else if (size != 0) {
-			return (int)( (v.get(size/2)+v.get((size/2)-1))/2 );
-		}
-		else {
+			return (v.get(0));
+		} else if (size % 2 == 1) {
+			return (v.get((size - 1) / 2));
+		} else if (size != 0) {
+			return (int)((v.get(size / 2) + v.get((size / 2) - 1)) / 2);
+		} else {
 			return valueToIgnore;
-		}	
+		}
 	}
 
 	/* Returns list of matching images to blend (i.e. images with same dimensions and stacksizes) */
@@ -506,24 +527,25 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		int[] fullList = WindowManager.getIDList();
 		ArrayList<String> matches = new ArrayList<>(fullList.length);
 		matches.add("Current image");
-		for (int i=0; i<fullList.length; i++) {
+		for (int i = 0; i < fullList.length; i++) {
 			ImagePlus imp2 = WindowManager.getImage(fullList[i]);
-			if (imp2.getWidth()==width && imp2.getHeight()==height && fullList[i]!=thisID) {
+			if (imp2.getWidth() == width && imp2.getHeight() == height && fullList[i] != thisID) {
 				String name = imp2.getTitle();
 				if (!matches.contains(name)) {
 					matches.add(name);
 				}
 			}
 		}
-        String[] matchingImages = new String[matches.size()];
-		for (int i=0; i<matches.size(); i++) {
+		String[] matchingImages = new String[matches.size()];
+		for (int i = 0; i < matches.size(); i++) {
 			matchingImages[i] = (String)matches.get(i);
 		}
 		return matchingImages;
 	}
 
 	@Override
-	public void setNPasses(int i) {}
-	
-}
+	public void setNPasses(int i)
+	{
+	}
 
+}
