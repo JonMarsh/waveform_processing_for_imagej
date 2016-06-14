@@ -30,7 +30,7 @@ public class SmoothingSplineInterpolationTest
 		double smoothingParameter = 1.0;
 		double stdev = 1.0;
 		float[] expResult = new float[] {4.876516428183352f, 7.562211872033401f, 10.80579397971267f, 14.95426625859855f, 18.04508071068257f, 21.44295007484453f, 31.64573946687982f, 32.55020325380502f, 32.96981029804613f, 37.72957763966635f, 4.876516428183352f, 7.562211872033401f, 10.80579397971267f, 14.95426625859855f, 18.04508071068257f, 21.44295007484453f, 31.64573946687982f, 32.55020325380502f, 32.96981029804613f, 37.72957763966635f};
-		float[] result = SmoothingSplineInterpolation.execute(waveforms, recordLength, interpolatedRecordLength, smoothingParameter, stdev);
+		float[] result = SmoothingSplineResize.execute(waveforms, recordLength, interpolatedRecordLength, smoothingParameter, stdev);
 		assertArrayEquals(expResult, result, Math.ulp(40.0f));
 
 		waveforms = new float[] {2.2f, 3.3f, 1.1f, 0.0f, 5.0f, 4.0f, 2.0f};
@@ -39,7 +39,7 @@ public class SmoothingSplineInterpolationTest
 		smoothingParameter = 0.9;
 		stdev = 0.9;
 		expResult = new float[] {2.516416117998386f, 2.501236031580607f, 1.634478136280626f, 1.108486786875286f, 2.371336276322567f, 3.982017380172527f, 3.742973813453688f, 2.329251143756413f};
-		result = SmoothingSplineInterpolation.execute(waveforms, recordLength, interpolatedRecordLength, smoothingParameter, stdev);
+		result = SmoothingSplineResize.execute(waveforms, recordLength, interpolatedRecordLength, smoothingParameter, stdev);
 		assertArrayEquals(expResult, result, Math.ulp(5.0f));
 }
 
@@ -56,7 +56,7 @@ public class SmoothingSplineInterpolationTest
 		double smoothingParameter = 1.0;
 		double stdev = 1.0;
 		double[] expResult = new double[] {4.876516428183352, 7.562211872033401, 10.80579397971267, 14.95426625859855, 18.04508071068257, 21.44295007484453, 31.64573946687982, 32.55020325380502, 32.96981029804613, 37.72957763966635, 4.876516428183352, 7.562211872033401, 10.80579397971267, 14.95426625859855, 18.04508071068257, 21.44295007484453, 31.64573946687982, 32.55020325380502, 32.96981029804613, 37.72957763966635};
-		double[] result = SmoothingSplineInterpolation.execute(waveforms, recordLength, interpolatedRecordLength, smoothingParameter, stdev);
+		double[] result = SmoothingSplineResize.execute(waveforms, recordLength, interpolatedRecordLength, smoothingParameter, stdev);
 		assertArrayEquals(expResult, result, Math.ulp(40.0));
 		
 		waveforms = new double[] {2.2, 3.3, 1.1, 0, 5, 4, 2};
@@ -65,7 +65,7 @@ public class SmoothingSplineInterpolationTest
 		smoothingParameter = 0.9;
 		stdev = 0.9;
 		expResult = new double[] {2.516416117998386, 2.501236031580607, 1.634478136280626, 1.108486786875286, 2.371336276322567, 3.982017380172527, 3.742973813453688, 2.329251143756413};
-		result = SmoothingSplineInterpolation.execute(waveforms, recordLength, interpolatedRecordLength, smoothingParameter, stdev);
+		result = SmoothingSplineResize.execute(waveforms, recordLength, interpolatedRecordLength, smoothingParameter, stdev);
 		assertArrayEquals(expResult, result, Math.ulp(5.0));
 		
 	}

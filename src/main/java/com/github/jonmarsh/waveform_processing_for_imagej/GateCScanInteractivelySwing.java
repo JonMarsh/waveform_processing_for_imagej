@@ -247,8 +247,10 @@ public class GateCScanInteractivelySwing implements PlugIn
 								WindowManager.getImage(inputImageID).setSlice(i + 1);
 								float[] gatePositionsForThisSlice = Arrays.copyOfRange(gatePositions, i * recordsPerFrame, (i + 1) * recordsPerFrame);
 								PolygonRoi roi = createSingleROI(gatePositionsForThisSlice, gateLength, searchBackwards);
-								roi.setPosition(i+1);
-								rm.add(WindowManager.getImage(inputImageID), roi, -1);
+								if (roi.getBounds().x < recordLength) { // only add ROI if it has at least one valid start position
+									roi.setPosition(i+1);
+									rm.add(WindowManager.getImage(inputImageID), roi, -1);
+								}
 							}
 						}
 						if (outputGatedSegments) {
