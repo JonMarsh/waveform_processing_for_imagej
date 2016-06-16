@@ -5,6 +5,7 @@ import ij.ImagePlus;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 
 /**
  * Computes the number of zero-crossings of each input waveform and returns the
@@ -74,63 +75,13 @@ public class ZeroCrossingCount implements ExtendedPlugInFilter
     {
         int currentSlice = pfr.getSliceNumber();
         float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
-		int[] numberOfZeroCrossings = execute(pixels, width);
+		int[] numberOfZeroCrossings = execute(pixelsDouble, width);
 		for (int i=0; i<height; i++) {
-			resultPixels[i*resultWidth+(currentSlice-1)] = numberOfZeroCrossings[i];
+			resultPixels[i*resultWidth+(currentSlice-1)] = (float)numberOfZeroCrossings[i];
 		}
     }
-
-	/**
-	 * Returns an array representing the number of zero-crossings in each record
-	 * in {@code waveforms}, where each record {@code recordLength} elements.
-	 * Output is null if {@code waveforms==null}, {@code recordLength<=1},
-	 * {@code waveforms.length<recordLength}, or if {@code waveforms.length} is
-	 * not evenly divisible by {@code recordLength}. A zero-crossing occurs if
-	 * {@code waveforms[i]*waveforms[i+1]<0}.
-	 *
-	 * @param waveforms    one-dimensional array composed of a series of
-	 *                     concatenated records, each of size equal to
-	 *                     {@code recordLength}
-	 * @param recordLength size of each record in {@code waveforms}
-	 * @return array containing number of zero-crossings of each input waveform
-	 */
-	public static int[] execute(float[] waveforms, int recordLength)
-	{
-		if (waveforms != null && recordLength > 1 && waveforms.length >= recordLength && waveforms.length%recordLength == 0) {
-			
-			// compute number of records
-			int numRecords = waveforms.length/recordLength;
-			
-			// allocate output array
-			int[] numberOfZeroCrossings = new int[numRecords];
-			
-			// loop over all records
-			for (int i=0; i<numRecords; i++) {
-				
-				// compute row offset
-				int offset = i*recordLength;
-				
-				// compute number of zero crossings
-				float currentValue = waveforms[offset];
-				int count = 0;
-				for (int j=1; j<recordLength; j++) {
-					float newValue = waveforms[offset+j];
-					if (currentValue*newValue<0.0f) {
-						count++;
-					}
-					currentValue = newValue;
-				}
-				numberOfZeroCrossings[i] = count;
-
-			}
-			
-			return numberOfZeroCrossings;
-				
-		}
-		
-		return null;
-	}
 	
 	/**
 	 * Returns an array representing the number of zero-crossings in each record

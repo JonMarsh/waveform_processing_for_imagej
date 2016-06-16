@@ -45,35 +45,9 @@ public class ZeroCrossingsTest
 	 * Test of execute method, of class ZeroCrossings.
 	 */
 	@Test
-	public void testExecute_floatArr_int()
-	{
-		System.out.println("execute");
-		float[] waveforms = new float[] {1.0f, 1.0f, 2.0f, -1.0f, 1.0f, 2.0f, -1.0f, 2.0f};
-		int recordLength = 8;
-		int[] expResult = new int[] {4};
-		int[] result = ZeroCrossingCount.execute(waveforms, recordLength);
-		assertArrayEquals(expResult, result);
-		
-		waveforms = new float[] {1.0f, 1.0f, 2.0f, -1.0f, 1.0f, 2.0f, -1.0f, 2.0f};
-		recordLength = 4;
-		expResult = new int[] {1, 2};
-		result = ZeroCrossingCount.execute(waveforms, recordLength);
-		assertArrayEquals(expResult, result);		
-		
-		waveforms = new float[] {1.0f, 1.0f, 2.0f, 0.0f, 1.0f, 2.0f, 1.0f, 2.0f};
-		recordLength = 8;
-		expResult = new int[] {0};
-		result = ZeroCrossingCount.execute(waveforms, recordLength);
-		assertArrayEquals(expResult, result);		
-	}
-
-	/**
-	 * Test of execute method, of class ZeroCrossings.
-	 */
-	@Test
 	public void testExecute_doubleArr_int()
 	{
-		System.out.println("execute");
+		System.out.println("Test of ZeroCrossings.execute");
 		double[] waveforms = new double[] {1.0, 1.0, 2.0, -1.0, 1.0, 2.0, -1.0, 2.0};
 		int recordLength = 8;
 		int[] expResult = new int[] {4};

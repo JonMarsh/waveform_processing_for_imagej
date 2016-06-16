@@ -1,6 +1,8 @@
 package com.github.jonmarsh.waveform_processing_for_imagej;
 
 import java.util.Arrays;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -492,103 +494,6 @@ public class WaveformUtilsTest
 		assertEquals(expResult, result, Math.ulp(expResult));
 		assertArrayEquals(a, aSorted, 0.0f);
 	}
-
-	/**
-	 * Test of fftComplexPowerOf2 method, of class WaveformUtils.
-	 */
-	@Test
-	public void testFftComplexPowerOf2_3args()
-	{
-		System.out.println("Test of WaveformUtils.fftComplexPowerOf2(double[], double[], boolean)");
-		double[] ar = new double[]{1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0};
-		double[] ai = new double[ar.length];
-		boolean isForward = true;
-		WaveformUtils.fftComplexPowerOf2(ar, ai, isForward);
-		double[] expResultRe = new double[]{8.0, -1.4142135623730951, 0.0, 1.4142135623730951, 0.0, 1.4142135623730951, 0.0, -1.4142135623730951};
-		double[] expResultIm = new double[]{0.0, -3.414213562373095, 0.0, 0.5857864376269049, 0.0, -0.5857864376269049, 0.0, 3.414213562373095};
-		assertArrayEquals(expResultRe, ar, Math.ulp(10.0));
-		assertArrayEquals(expResultIm, ai, Math.ulp(10.0));
-
-		isForward = false;
-		System.arraycopy(expResultRe, 0, ar, 0, ar.length);
-		System.arraycopy(expResultIm, 0, ai, 0, ai.length);
-		WaveformUtils.fftComplexPowerOf2(ar, ai, isForward);
-		expResultRe = new double[]{1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0};
-		expResultIm = new double[ar.length];
-		assertArrayEquals(expResultRe, ar, Math.ulp(10.0));
-		assertArrayEquals(expResultIm, ai, Math.ulp(10.0));
-	}
-
-	/**
-	 * Test of fftComplexPowerOf2 method, of class WaveformUtils.
-	 */
-	@Test
-	public void testFftComplexPowerOf2_5args()
-	{
-		System.out.println("Test of WaveformUtils.fftComplexPowerOf2(double[], double[], int, int, boolean)");
-		double[] ar = new double[]{7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0};
-		double[] ai = new double[ar.length];
-		int from = 8;
-		int to = 16;
-		boolean isForward = true;
-		WaveformUtils.fftComplexPowerOf2(ar, ai, from, to, isForward);
-		double[] expResultRe = new double[]{7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0, 8.0, -1.4142135623730951, 0.0, 1.4142135623730951, 0.0, 1.4142135623730951, 0.0, -1.4142135623730951};
-		double[] expResultIm = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -3.414213562373095, 0.0, 0.5857864376269049, 0.0, -0.5857864376269049, 0.0, 3.414213562373095};
-		assertArrayEquals(expResultRe, ar, Math.ulp(10.0));
-		assertArrayEquals(expResultIm, ai, Math.ulp(10.0));
-
-		isForward = false;
-		System.arraycopy(expResultRe, 0, ar, 0, ar.length);
-		System.arraycopy(expResultIm, 0, ai, 0, ai.length);
-		WaveformUtils.fftComplexPowerOf2(ar, ai, from, to, isForward);
-		expResultRe = new double[]{7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0};
-		expResultIm = new double[ar.length];
-		assertArrayEquals(expResultRe, ar, Math.ulp(10.0));
-		assertArrayEquals(expResultIm, ai, Math.ulp(10.0));
-	}
-
-	/**
-	 * Test of fftRealPowerOf2Forward method, of class WaveformUtils.
-	 */
-	@Test
-	public void testFftRealPowerOf2Forward()
-	{
-		System.out.println("Test of WaveformUtils.fftRealPowerOf2Forward(double[], double[])");
-		double[] ar = new double[]{1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0};
-		double[] ai = new double[ar.length];
-		WaveformUtils.fftRealPowerOf2Forward(ar, ai);
-		double[] expResultRe = new double[]{8.0, -1.4142135623730951, 0.0, 1.4142135623730951, 0.0, 1.4142135623730951, 0.0, -1.4142135623730951};
-		double[] expResultIm = new double[]{0.0, -3.414213562373095, 0.0, 0.5857864376269049, 0.0, -0.5857864376269049, 0.0, 3.414213562373095};
-		assertArrayEquals(expResultRe, ar, Math.ulp(10.0));
-		assertArrayEquals(expResultIm, ai, Math.ulp(10.0));
-		
-		ar = new double[]{1, 4, 3, -2, -2.2, 0, 3, -1};
-		ai = new double[ar.length];
-		WaveformUtils.fftRealPowerOf2Forward(ar, ai);
-		expResultRe = new double[]{5.8, 6.7355339059327379, -7.2, -0.3355339059327377, 3.8, -0.3355339059327377, -7.2, 6.7355339059327379};
-		expResultIm = new double[]{0.0, -2.1213203435596428, -7.0, -2.1213203435596428, 0.0, 2.1213203435596428, 7.0, 2.1213203435596428};
-		assertArrayEquals(expResultRe, ar, Math.ulp(10.0));
-		assertArrayEquals(expResultIm, ai, Math.ulp(10.0));
-	}
-
-/**
-	 * Test of fftRealPowerOf2Forward method, of class WaveformUtils.
-	 */
-	@Test
-	public void testFftRealPowerOf2Inverse()
-	{
-//		System.out.println("fftRealPowerOf2Inverse");
-//		double[] ar = new double[]{8.0, -1.4142135623730951, 0.0, 1.4142135623730951, 0.0, 1.4142135623730951, 0.0, -1.4142135623730951};
-//		double[] ai = new double[]{0.0, -3.414213562373095, 0.0, 0.5857864376269049, 0.0, -0.5857864376269049, 0.0, 3.414213562373095};
-//		WaveformUtils.fftRealPowerOf2Inverse(ar, ai);
-//		double[] expResultRe = new double[]{1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0};
-//		double[] expResultIm = new double[ar.length];
-//		System.out.println(Arrays.toString(ar));
-//		System.out.println(Arrays.toString(ai));
-//		assertArrayEquals(expResultRe, ar, Math.ulp(10.0));
-//		assertArrayEquals(expResultIm, ai, Math.ulp(10.0));
-		
-	}	
 	
 	/**
 	 * Test of fastHilbertTransform method, of class WaveformUtils.
@@ -607,29 +512,6 @@ public class WaveformUtilsTest
 		expResult = new double[]{-1.207106781186547, 1.017766952966369, -0.9142135623730954, 0.3964466094067254, 0.207106781186547, -2.517766952966369, 1.914213562373095, 1.103553390593275};
 		assertArrayEquals(expResult, a, Math.ulp(10.0));
 
-	}
-
-	/**
-	 * Test of isPowerOf2 method, of class WaveformUtils.
-	 */
-	@Test
-	public void testIsPowerOf2()
-	{
-		System.out.println("Test of WaveformUtils.isPowerOf2(int)");
-		int n = 9;
-		boolean expResult = false;
-		boolean result = WaveformUtils.isPowerOf2(n);
-		assertEquals(expResult, result);
-
-		n = 8;
-		expResult = true;
-		result = WaveformUtils.isPowerOf2(n);
-		assertEquals(expResult, result);
-
-		n = 0;
-		expResult = false;
-		result = WaveformUtils.isPowerOf2(n);
-		assertEquals(expResult, result);
 	}
 
 	/**
@@ -732,150 +614,6 @@ public class WaveformUtilsTest
 		expResult = new float[]{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
 		result = WaveformUtils.padMultipleWaveformsToPowerOf2(a, waveformLength, value);
 		assertArrayEquals(expResult, result, Math.ulp(1.0f));
-	}
-
-	/**
-	 * Test of reverseArrayInPlace method, of class WaveformUtils.
-	 */
-	@Test
-	public void testReverseArrayInPlace_doubleArr()
-	{
-		System.out.println("Test of WaveformUtils.reverseArrayInPlace(double[])");
-		double[] a = new double[]{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
-		double[] expResult = new double[]{7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a, 0.0);
-		
-		a = new double[]{1.0, 2.0};
-		expResult = new double[]{2.0, 1.0};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a, 0.0);
-		
-		a = new double[]{1.0};
-		expResult = new double[]{1.0};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a, 0.0);
-		
-		a = new double[]{};
-		expResult = new double[]{};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a, 0.0);
-		
-		a = null;
-		expResult = null;
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a, 0.0);
-	}
-
-	/**
-	 * Test of reverseArrayInPlace method, of class WaveformUtils.
-	 */
-	@Test
-	public void testReverseArrayInPlace_3args_1()
-	{
-		System.out.println("Test of WaveformUtils.reverseArrayInPlace(double[], int, int)");
-		double[] a = new double[]{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
-		int from = 4;
-		int to = 8;
-		double[] aReversed = new double[]{1.0, 2.0, 3.0, 4.0, 8.0, 7.0, 6.0, 5.0};
-		WaveformUtils.reverseArrayInPlace(a, from, to);
-		assertArrayEquals(a, aReversed, 0.0);
-	}
-
-	/**
-	 * Test of reverseArrayInPlace method, of class WaveformUtils.
-	 */
-	@Test
-	public void testReverseArrayInPlace_floatArr()
-	{
-		System.out.println("Test of WaveformUtils.reverseArrayInPlace(float[])");
-		float[] a = new float[]{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
-		float[] expResult = new float[]{7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a, 0.0f);
-		
-		a = new float[]{1.0f, 2.0f};
-		expResult = new float[]{2.0f, 1.0f};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a, 0.0f);
-		
-		a = new float[]{1.0f};
-		expResult = new float[]{1.0f};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a, 0.0f);
-		
-		a = new float[]{};
-		expResult = new float[]{};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a, 0.0f);
-		
-		a = null;
-		expResult = null;
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a, 0.0f);
-	}
-
-	/**
-	 * Test of reverseArrayInPlace method, of class WaveformUtils.
-	 */
-	@Test
-	public void testReverseArrayInPlace_3args_2()
-	{
-		System.out.println("Test of WaveformUtils.reverseArrayInPlace(float[], int, int)");
-		float[] a = new float[]{1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
-		int from = 4;
-		int to = 8;
-		float[] aReversed = new float[]{1.0f, 2.0f, 3.0f, 4.0f, 8.0f, 7.0f, 6.0f, 5.0f};
-		WaveformUtils.reverseArrayInPlace(a, from, to);
-		assertArrayEquals(a, aReversed, 0.0f);
-	}
-
-	/**
-	 * Test of reverseArrayInPlace method, of class WaveformUtils.
-	 */
-	@Test
-	public void testReverseArrayInPlace_intArr()
-	{
-		System.out.println("Test of WaveformUtils.reverseArrayInPlace(int[])");
-		int[] a = new int[]{1, 2, 3, 4, 5, 6, 7};
-		int[] expResult = new int[]{7, 6, 5, 4, 3, 2, 1};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(a, expResult);
-		
-		a = new int[]{1, 2};
-		expResult = new int[]{2, 1};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a);
-		
-		a = new int[]{1};
-		expResult = new int[]{1};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a);
-		
-		a = new int[]{};
-		expResult = new int[]{};
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a);
-		
-		a = null;
-		expResult = null;
-		WaveformUtils.reverseArrayInPlace(a);
-		assertArrayEquals(expResult, a);
-	}
-
-	/**
-	 * Test of reverseArrayInPlace method, of class WaveformUtils.
-	 */
-	@Test
-	public void testReverseArrayInPlace_3args_3()
-	{
-		System.out.println("Test of WaveformUtils.reverseArrayInPlace(int[], int, int)");
-		int[] a = new int[]{1, 2, 3, 4, 5, 6, 7, 8};
-		int from = 4;
-		int to = 8;
-		int[] aReversed = new int[]{1, 2, 3, 4, 8, 7, 6, 5};
-		WaveformUtils.reverseArrayInPlace(a, from, to);
-		assertArrayEquals(a, aReversed);
 	}
 
 	/**
@@ -1915,39 +1653,6 @@ public class WaveformUtilsTest
 		expResult = 2.321928094887362;
 		result = WaveformUtils.log2(x);
 		assertEquals(expResult, result, Math.ulp(expResult));
-	}
-
-	/**
-	 * Test of pow method, of class WaveformUtils.
-	 */
-	@Test
-	public void testPow()
-	{
-		System.out.println("Test of WaveformUtils.pow(double, int)");
-		double a = 0.0;
-		int b = 0;
-		double expResult = 1.0;
-		double result = WaveformUtils.pow(a, b);
-		assertEquals(expResult, result, 0.0);
-
-		a = 2.0;
-		b = 5;
-		expResult = 32.0;
-		result = WaveformUtils.pow(a, b);
-		assertEquals(expResult, result, Math.ulp(expResult));
-
-		a = -2.0;
-		b = 5;
-		expResult = -32.0;
-		result = WaveformUtils.pow(a, b);
-		assertEquals(expResult, result, Math.ulp(expResult));
-
-		a = 2.0;
-		b = -5;
-		expResult = 0.03125;
-		result = WaveformUtils.pow(a, b);
-		assertEquals(expResult, result, Math.ulp(expResult));
-
 	}
 
 	/**

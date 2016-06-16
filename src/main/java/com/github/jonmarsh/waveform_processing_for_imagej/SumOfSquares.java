@@ -5,6 +5,7 @@ import ij.ImagePlus;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 
 /**
  * Computes the sum of the squared values of each input waveform and returns the
@@ -72,58 +73,13 @@ public class SumOfSquares implements ExtendedPlugInFilter
     {
         int currentSlice = pfr.getSliceNumber();
         float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
-		float[] sumSqrs = execute(pixels, width);
+		double[] sumSqrs = execute(pixelsDouble, width);
 		for (int i=0; i<height; i++) {
-			resultPixels[i*resultWidth+(currentSlice-1)] = sumSqrs[i];
+			resultPixels[i*resultWidth+(currentSlice-1)] = (float)sumSqrs[i];
 		}
     }
-
-	/**
-	 * Returns an array representing the sum of the squared values of each record in
-	 * {@code waveforms}, where each record has {@code recordLength} elements.
-	 * Output is null if {@code waveforms==null}, {@code recordLength<=0},
-	 * {@code waveforms.length<recordLength}, or if {@code waveforms.length} is
-	 * not evenly divisible by {@code recordLength}.
-	 *
-	 * @param waveforms    one-dimensional array composed of a series of
-	 *                     concatenated records, each of size equal to
-	 *                     {@code recordLength}
-	 * @param recordLength size of each record in {@code waveforms}
-	 * @return array of sum of the squared values of input waveforms
-	 */
-	public static float[] execute(float[] waveforms, int recordLength)
-	{
-		if (waveforms != null && recordLength > 0 && waveforms.length >= recordLength && waveforms.length%recordLength == 0) {
-			
-			// compute number of records
-			int numRecords = waveforms.length/recordLength;
-			
-			// allocate output array
-			float[] sumSqrs = new float[numRecords];
-			
-			// loop over all records
-			for (int i=0; i<numRecords; i++) {
-				
-				// compute row offset
-				int offset = i*recordLength;
-				
-				// compute sum of the squared values of current waveform
-				double sum = 0.0;
-				for (int j=0; j<recordLength; j++) {
-					double value = waveforms[offset+j];
-					sum += value*value;
-				}
-				sumSqrs[i] = (float)sum;
-
-			}
-			
-			return sumSqrs;
-				
-		}
-		
-		return null;
-	}
 	
 	/**
 	 * Returns an array representing the sum of the squared values of each record in

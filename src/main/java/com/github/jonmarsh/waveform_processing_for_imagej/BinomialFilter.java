@@ -7,6 +7,7 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 import java.awt.AWTEvent;
 
 /**
@@ -78,78 +79,15 @@ public class BinomialFilter implements ExtendedPlugInFilter, DialogListener
     public void run(ImageProcessor ip) 
     {
         float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 		
-		execute(pixels, width, nPasses);
+		execute(pixelsDouble, width, nPasses);
+		
+		for (int i=0; i<pixels.length; i++) {
+			pixels[i] = (float)pixelsDouble[i];
+		}
     }
 
-	/**
-	 * Applies a binomial filter (i.e., a [1, 2, 1] kernel) to each record in 
-	 * {@code waveforms} the specified number of times, where each record is of 
-	 * size {@code recordLength}. Output values are normalized by the sum of the 
-	 * coefficients.  Input array is left unchanged if it is null, {@code recordLength<=2}, 
-	 * {@code nPasses<=0}, or {@code waveforms.length} is not evenly divisible
-	 * by {@code recordLength}.
-	 * 
-	 * @param waveforms		one-dimensional array composed of a series of concatenated 
-	 *						records, each of size equal to {@code recordLength}
-	 * @param recordLength	size of each record in {@code waveforms}
-	 * @param nPasses		number of filter passes (larger numbers yield more smoothing)
-	 */
-	public static void execute(float[] waveforms, int recordLength, int nPasses)
-	{
-		if (waveforms != null && recordLength > 2 && nPasses >= 0 && waveforms.length%recordLength == 0) {
-						
-			// compute number of records
-			int numRecords = waveforms.length/recordLength;
-			
-			// loop over all records
-			for (int i=0; i<numRecords; i++) {
-				
-				// compute row offset
-				int offset = i*recordLength;
-				
-				// initialize double-precision copy of current record for temporary computations with better accuracy
-				double[] currentWaveform = new double[recordLength];
-				for (int k=0; k<recordLength; k++) {
-					currentWaveform[k] = waveforms[offset+k];
-				}
-				
-				// perform specified number of passes on current record
-				for (int passNumber=0; passNumber<nPasses; passNumber++) {
-					
-					// temporary variables for first and last filtered values
-					double firstValue = 0.5*(currentWaveform[0] + currentWaveform[1]);
-					double lastValue = 0.5*(currentWaveform[recordLength-2] + currentWaveform[recordLength-1]);
-					
-					// more temporary variables for next loop
-					double previousValue = currentWaveform[0];
-					double currentValue = currentWaveform[1];
-					
-					// loop over all values of current waveform except for ends
-					for (int j=1; j<recordLength-1; j++) {
-						double filteredValue = 0.25*(previousValue + currentValue + currentValue + currentWaveform[j+1]);
-						previousValue = currentValue;
-						currentValue = currentWaveform[j+1];
-						currentWaveform[j] = filteredValue;
-					}
-					
-					// take care of endpoints
-					currentWaveform[0] = firstValue;
-					currentWaveform[recordLength-1] = lastValue;
-					
-				}
-				
-				// copy results back into input array
-				for (int j=0; j<recordLength; j++) {
-					waveforms[offset+j] = (float)currentWaveform[j];
-				}
-					
-			}
-			
-		}
-		
-	}
-	
 	/**
 	 * Applies a binomial filter (i.e., a [1, 2, 1] kernel) to each record in 
 	 * {@code waveforms} the specified number of times, where each record is of 

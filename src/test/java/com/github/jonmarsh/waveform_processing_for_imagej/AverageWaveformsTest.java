@@ -45,20 +45,6 @@ public class AverageWaveformsTest
 	 * Test of execute method, of class AverageWaveforms.
 	 */
 	@Test
-	public void testExecute_floatArr_int()
-	{
-		System.out.println("Test of AverageWaveforms.execute(float[], int)");
-		float[] waveforms = new float[] {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
-		int recordLength = 4;
-		float[] expResult = new float[] {3.0f, 4.0f, 5.0f, 6.0f};
-		float[] result = AverageWaveforms.execute(waveforms, recordLength);
-		assertArrayEquals(expResult, result, 0.0f);
-	}
-
-	/**
-	 * Test of execute method, of class AverageWaveforms.
-	 */
-	@Test
 	public void testExecute_doubleArr_int()
 	{
 		System.out.println("Test of AverageWaveforms.execute(double[], int)");

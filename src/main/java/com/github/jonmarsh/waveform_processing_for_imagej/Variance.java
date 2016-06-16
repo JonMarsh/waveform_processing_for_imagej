@@ -6,6 +6,7 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 
 /**
  * Computes the variance of each input waveform and returns the result in a new
@@ -86,57 +87,13 @@ public class Variance implements ExtendedPlugInFilter
     {
         int currentSlice = pfr.getSliceNumber();
         float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
-		float[] variances = execute(pixels, width, useUnbiasedEstimate);
+		double[] variances = execute(pixelsDouble, width, useUnbiasedEstimate);
 		for (int i=0; i<height; i++) {
-			resultPixels[i*resultWidth+(currentSlice-1)] = variances[i];
+			resultPixels[i*resultWidth+(currentSlice-1)] = (float)variances[i];
 		}
     }
-
-	/**
-	 * Returns an array representing the variance of each record in
-	 * {@code waveforms}, where each record has {@code recordLength} elements.
-	 * The variance is computed using a numerically stable algorithm described by 
-	 * <a href="http://www.jstor.org/stable/1266577">Welford</a>. 
-	 * Output is null if {@code waveforms==null}, {@code recordLength<=1},
-	 * {@code waveforms.length<recordLength}, or if {@code waveforms.length} is
-	 * not evenly divisible by {@code recordLength}.
-	 *
-	 * @param waveforms           one-dimensional array composed of a series of
-	 *                            concatenated records, each of size equal to
-	 *                            {@code recordLength}
-	 * @param recordLength        size of each record in {@code waveforms}
-	 * @param useUnbiasedEstimate set to true to output an unbiased estimate of
-	 *                            variance
-	 * @return array of variances of input waveforms
-	 */
-	public static float[] execute(float[] waveforms, int recordLength, boolean useUnbiasedEstimate)
-	{
-		if (waveforms != null && recordLength > 1 && waveforms.length >= recordLength && waveforms.length%recordLength == 0) {
-			
-			// compute number of records
-			int numRecords = waveforms.length/recordLength;
-			
-			// allocate output array
-			float[] meanValues = new float[numRecords];
-			
-			// loop over all records
-			for (int i=0; i<numRecords; i++) {
-				
-				// compute row offset
-				int offset = i*recordLength;
-				
-				// find variance of current waveform
-				meanValues[i] = (float)(WaveformUtils.meanAndVariance(waveforms, useUnbiasedEstimate, offset, offset+recordLength)[1]);
-
-			}
-			
-			return meanValues;
-				
-		}
-		
-		return null;
-	}
 	
 	/**
 	 * Returns an array representing the variance of each record in

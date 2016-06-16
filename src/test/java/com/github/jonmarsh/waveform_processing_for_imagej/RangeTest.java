@@ -42,26 +42,6 @@ public class RangeTest
 	 * Test of execute method, of class Range.
 	 */
 	@Test
-	public void testExecute_floatArr_int()
-	{
-		System.out.println("Test of Range.execute(float[], int)");
-		float[] waveforms = new float[]{1, 2, -1, 5, 7, 8};
-		int recordLength = 6;
-		float[] expResult = new float[]{9.0f};
-		float[] result = Range.execute(waveforms, recordLength);
-		assertArrayEquals(expResult, result, 0.0f);
-
-		waveforms = new float[]{1, 2, -1, 5, 7, 8};
-		recordLength = 3;
-		expResult = new float[]{3.0f, 3.0f};
-		result = Range.execute(waveforms, recordLength);
-		assertArrayEquals(expResult, result, 0.0f);
-	}
-
-	/**
-	 * Test of execute method, of class Range.
-	 */
-	@Test
 	public void testExecute_doubleArr_int()
 	{
 		System.out.println("Test of Range.execute(double[], int)");

@@ -7,6 +7,7 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 import java.awt.AWTEvent;
 import java.util.Arrays;
 
@@ -70,108 +71,20 @@ public class MovingWindowVariance implements ExtendedPlugInFilter, DialogListene
 		radius = (int)gd.getNextNumber();
 		useUnbiasedEstimateOfVariance = gd.getNextBoolean();
 
-		return (radius >= 0 && !gd.invalidNumber());
+		return (!gd.invalidNumber() && radius >= 0);
 	}
 
 	@Override
 	public void run(ImageProcessor ip)
 	{
 		float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
-		execute(pixels, width, radius, useUnbiasedEstimateOfVariance);
-	}
-
-	/**
-	 * Applies a moving window to each record in {@code waveforms}, where each
-	 * record is of length {@code recordLength}, computes the variance in the
-	 * window, and replaces the value at the central point of the window with
-	 * that variance. The moving window is of length {@code 2*radius+1}. Input
-	 * waveforms are left unchanged if the array representing them is null,
-	 * {@code 2*radius+1>recordLength}, {@code radius<=0}, or
-	 * {@code waveforms.length} is not evenly divisible by {@code recordLength}.
-	 * At positions where a part of the moving window lies outside the bounds of
-	 * the waveform, the waveform values are mirrored around the appropriate end
-	 * point. This method is adapted from an algorithm described by D. H. D.
-	 * West in Communications of the ACM, 22, 9, 532-535 (1979): "Updating Mean
-	 * and Variance Estimates: An Improved Method."
-	 * <p>
-	 * @param waveforms	                    one-dimensional array composed of a
-	 *                                      series of concatenated records, each
-	 *                                      of size equal to
-	 *                                      {@code recordLength}
-	 * @param recordLength                  size of each record in
-	 *                                      {@code waveforms}
-	 * @param radius                        radius of moving window; length of
-	 *                                      two-sided window function is equal
-	 *                                      to {@code 2*radius+1}
-	 * @param useUnbiasedEstimateOfVariance if checked, the unbiased estimate of
-	 *                                      variance is returned (i.e. use
-	 *                                      {@code n-1} in the denominator of
-	 *                                      the computation; if unchecked,
-	 *                                      {@code n} is used)
-	 */
-	public static final void execute(float[] waveforms, int recordLength, int radius, boolean useUnbiasedEstimateOfVariance)
-	{
-		int windowLength = 2 * radius + 1;
-
-		double norm = useUnbiasedEstimateOfVariance ? 1.0 / (windowLength - 1) : 1.0 / windowLength;
-
-		if (waveforms != null && recordLength > windowLength && waveforms.length % recordLength == 0 && radius > 0) {
-
-			// compute number of records
-			int numRecords = waveforms.length / recordLength;
-
-			// loop over all records
-			for (int i = 0; i < numRecords; i++) {
-
-				// compute row offset
-				int offset = i * recordLength;
-
-				// initialize double-precision copy of current waveform
-				double[] currentWaveformCopy = new double[recordLength];
-				for (int j = 0; j < recordLength; j++) {
-					currentWaveformCopy[j] = waveforms[offset + j];
-				}
-
-				// move window and compute means
-				for (int j = 0; j < recordLength; j++) {
-
-					// initialize variables at center of windowed segment
-					long n = 1;
-					double mean = currentWaveformCopy[j];
-					double m2 = 0.0;
-					double delta;
-
-					// finish computations at the current index
-					for (int k = -radius; k < 0; k++) {
-						int index = j + k;
-						if (index < 0) {
-							index = -index;
-						}
-						n += 1;
-						delta = currentWaveformCopy[index] - mean;
-						mean += delta / n;
-						m2 += delta * (currentWaveformCopy[index] - mean);
-					}
-					for (int k = 1; k <= radius; k++) {
-						int index = j + k;
-						if (index > recordLength - 1) {
-							index = 2 * (recordLength - 1) - index;
-						}
-						n += 1;
-						delta = currentWaveformCopy[index] - mean;
-						mean += delta / n;
-						m2 += delta * (currentWaveformCopy[index] - mean);
-					}
-
-					waveforms[offset + j] = (float)(m2 * norm);
-
-				}
-
-			}
-
+		execute(pixelsDouble, width, radius, useUnbiasedEstimateOfVariance);
+		
+		for (int i=0; i<pixels.length; i++) {
+			pixels[i] = (float)pixelsDouble[i];
 		}
-
 	}
 
 	/**

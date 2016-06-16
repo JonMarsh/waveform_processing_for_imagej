@@ -16,57 +16,9 @@ public class FFTComplexTest
 	 * Test of execute method, of class FFTComplex.
 	 */
 	@Test
-	public void testExecute_4args_1()
-	{
-		System.out.println("Test of FFTComplex.execute(float[], float[], boolean, int)");
-		float[] realWaveforms = new float[] {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
-		float[] imagWaveforms = new float[] {7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
-		boolean isForward = true;
-		int recordLength = 8;
-		float[] expResultRe = new float[] {36.0f, 5.6568542494923797f, 0.0f, -2.3431457505076194f, -4.0f, -5.6568542494923806f, -8.0f, -13.6568542494923797f};
-		float[] expResultIm = new float[] {28.0f, 13.6568542494923797f, 8.0f, 5.6568542494923806f, 4.0f, 2.3431457505076194f, 0.0f, -5.6568542494923797f};
-		float[][] result = FFTComplex.execute(realWaveforms, imagWaveforms, isForward, recordLength);
-		assertArrayEquals(expResultRe, result[0], Math.ulp(1.0f));
-		assertArrayEquals(expResultIm, result[1], Math.ulp(1.0f));
-		
-		realWaveforms = new float[] {36.0f, 5.6568542494923797f, 0.0f, -2.3431457505076194f, -4.0f, -5.6568542494923806f, -8.0f, -13.6568542494923797f};
-		imagWaveforms = new float[] {28.0f, 13.6568542494923797f, 8.0f, 5.6568542494923806f, 4.0f, 2.3431457505076194f, 0.0f, -5.6568542494923797f};
-		isForward = false;
-		recordLength = 8;
-		expResultRe = new float[] {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
-		expResultIm = new float[] {7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
-		result = FFTComplex.execute(realWaveforms, imagWaveforms, isForward, recordLength);
-		assertArrayEquals(expResultRe, result[0], Math.ulp(1.0f));
-		assertArrayEquals(expResultIm, result[1], Math.ulp(1.0f));
-		
-		realWaveforms = new float[] {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
-		imagWaveforms = new float[] {7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
-		isForward = true;
-		recordLength = 4;
-		expResultRe = new float[] {10.0f, 0.0f, -2.0f, -4.0f, 26.0f, 0.0f, -2.0f, -4.0f};
-		expResultIm = new float[] {22.0f, 4.0f, 2.0f, 0.0f, 6.0f, 4.0f, 2.0f, 0.0f};
-		result = FFTComplex.execute(realWaveforms, imagWaveforms, isForward, recordLength);
-		assertArrayEquals(expResultRe, result[0], Math.ulp(1.0f));
-		assertArrayEquals(expResultIm, result[1], Math.ulp(1.0f));
-		
-		realWaveforms = new float[] {10.0f, 0.0f, -2.0f, -4.0f, 26.0f, 0.0f, -2.0f, -4.0f};
-		imagWaveforms = new float[] {22.0f, 4.0f, 2.0f, 0.0f, 6.0f, 4.0f, 2.0f, 0.0f};
-		isForward = false;
-		recordLength = 4;
-		expResultRe = new float[] {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
-		expResultIm = new float[] {7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
-		result = FFTComplex.execute(realWaveforms, imagWaveforms, isForward, recordLength);
-		assertArrayEquals(expResultRe, result[0], Math.ulp(1.0f));
-		assertArrayEquals(expResultIm, result[1], Math.ulp(1.0f));		
-	}
-
-	/**
-	 * Test of execute method, of class FFTComplex.
-	 */
-	@Test
 	public void testExecute_4args_2()
 	{
-		System.out.println("Test of FFTComplex.execute(double[], double[], boolean, int)");
+		System.out.println("Test of FFTComplex.execute()");
 		double[] realWaveforms = new double[] {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
 		double[] imagWaveforms = new double[] {7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0};
 		boolean isForward = true;

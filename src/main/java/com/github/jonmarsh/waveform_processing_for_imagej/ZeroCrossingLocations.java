@@ -8,6 +8,7 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 import java.awt.AWTEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -98,9 +99,10 @@ public class ZeroCrossingLocations implements ExtendedPlugInFilter, DialogListen
 	{
 		int currentSlice = pfr.getSliceNumber();
 		float[] pixels = (float[]) ip.getPixels();	// CONVERT_TO_FLOAT flag is set, so this always works
+		double[] pixelsDouble = Tools.toDouble(pixels);
 		float[] rootsPixels = (float[]) (rootsStack.getProcessor(currentSlice).getPixels());
 
-		double[][][] results = execute(pixels, width, interpolationChoice);
+		double[][][] results = execute(pixelsDouble, width, interpolationChoice);
 		for (int i = 0; i < height; i++) {
 			int offset = i * width;
 			int w = Math.min(width, results[i].length);
@@ -108,117 +110,6 @@ public class ZeroCrossingLocations implements ExtendedPlugInFilter, DialogListen
 				rootsPixels[offset + j] = (float) (results[i][j][0] + results[i][j][1]);
 			}
 		}
-	}
-
-	/**
-	 * Returns an array of arrays of {@code [base_index, fractional_index]}
-	 * pairs representing the positions of zero-crossings in each record in
-	 * {@code waveforms}, where the number of elements in each record is given
-	 * by {@code recordLength}. Output is null if {@code waveforms==null}, {@code recordLength<=3},
-	 * {@code waveforms.length<recordLength}, or if {@code waveforms.length} is
-	 * not evenly divisible by {@code recordLength}. Each zero-crossing location
-	 * can be computed by adding the fractional index to the corresponding base
-	 * index. The fractional index is always greater than or equal to zero or
-	 * less than 1.0, so that accuracy is maintained and precision is
-	 * consistent, even when the integer base index is large.
-	 *
-	 * @param waveforms           one-dimensional array composed of a series of
-	 *                            concatenated records, each of size equal to
-	 *                            {@code recordLength}
-	 * @param recordLength        size of each record in {@code waveforms}
-	 * @param interpolationMethod {@link #LINEAR} for linear interpolation or
-	 *                            {@link #CUBIC_SPLINE} for natural cubic spline
-	 *                            interpolation between points in a waveform
-	 * @return array of variable length arrays of
-	 *         {@code [base_index, fractional_index]} pairs. Zero crossings
-	 *         locations can be read for the k<sup>th</sup> record off from
-	 *         {@code [recordK][[base_index0, fractional_index0],...,[base_indexN, fractional_indexN]]}.
-	 *         Each zero-crossing location can be computed by adding the
-	 *         fractional index to the corresponding base index. The fractional
-	 *         index is always greater than or equal to zero or less than 1.0,
-	 *         and the base index should always be interpreted as an integer. If
-	 *         no zero-crossings occur in an individual record, the
-	 *         corresponding subarray is of length zero.
-	 */
-	public static double[][][] execute(float[] waveforms, int recordLength, int interpolationMethod)
-	{
-		if (waveforms != null && recordLength > 3 && waveforms.length >= recordLength && waveforms.length % recordLength == 0) {
-
-			// compute number of records
-			int numRecords = waveforms.length / recordLength;
-
-			// allocate output array of arrays of {baseIndex, fractionalIndex} pairs
-			double[][][] roots = new double[numRecords][][];
-
-			// loop over all records
-			for (int i = 0; i < numRecords; i++) {
-
-				// compute row offset
-				int offset = i * recordLength;
-
-				// initialize temporary ArrayList to hold roots
-				ArrayList<double[]> rootList = new ArrayList<>();
-
-				switch (interpolationMethod) {
-
-					case LINEAR: {
-						double y0 = waveforms[offset];
-						// loop over intervals between knots
-						for (int j = 0; j < recordLength - 1; j++) {
-							double y1 = waveforms[offset + j + 1];
-							if (y0 * y1 < 0.0) {	// zero-crossing occurs in this interval
-								rootList.add(new double[]{j, y0 / (y0 - y1)});
-							} else if (y0 == 0.0 && y1 != 0.0) {	// zero-crossing occurs at the beginning of the interval
-								rootList.add(new double[]{j, 0.0});
-							}
-							y0 = y1;
-						}
-						if (waveforms[offset + recordLength - 1] == 0.0 && waveforms[offset + recordLength - 2] != 0.0) {	// check last point to see if it's a zero crossing
-							rootList.add(new double[]{recordLength - 1, 0.0});
-						}
-						break;
-					}
-
-					case CUBIC_SPLINE: {
-						// get spline coefficients for this waveform
-						double[][] splineCoeffs = WaveformUtils.cubicSplineInterpolantUniformSpacing(waveforms, offset, offset + recordLength, 1.0);
-						// loop over intervals between knots
-						for (int j = 0; j < recordLength - 1; j++) {
-							// determine roots of cubic polynomial in this interval
-							double q = 1.0 / splineCoeffs[3][j];
-							double[] r = WaveformUtils.cubicRoots(q * splineCoeffs[2][j], q * splineCoeffs[1][j], q * splineCoeffs[0][j]);
-							for (int k = 0; k < r.length; k++) {
-								if (r[k] >= 0 && j + r[k] < j + 1) {
-									rootList.add(new double[]{j, r[k]});
-								}
-							}
-						}
-						// include last point if it equals zero and slope is nonzero
-						double penultimateX = Math.nextAfter(recordLength - 1, 0.0);
-						double h = penultimateX - (recordLength - 2);
-						double penultimateY = splineCoeffs[0][recordLength - 2] + h * (splineCoeffs[1][recordLength - 2] + h * (splineCoeffs[2][recordLength - 2] + h * splineCoeffs[3][recordLength - 2]));
-						if (waveforms[offset + recordLength - 1] == 0.0 && penultimateY != 0.0) {
-							rootList.add(new double[]{recordLength - 1, 0.0});
-						}
-						break;
-					}
-
-					default: {
-						break;
-					}
-
-				}
-
-				roots[i] = new double[rootList.size()][2];
-				for (int j = 0; j < rootList.size(); j++) {
-					roots[i][j] = rootList.get(j);
-				}
-			}
-
-			return roots;
-		}
-
-		return null;
 	}
 
 	/**

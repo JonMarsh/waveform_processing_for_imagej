@@ -7,6 +7,7 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 import java.awt.AWTEvent;
 import java.util.Arrays;
 
@@ -74,111 +75,13 @@ public class SubtractFromWaveform implements ExtendedPlugInFilter, DialogListene
 	public void run(ImageProcessor ip) 
 	{
 		float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
-		execute(pixels, width, operationChoice);
-	}
-	
-	/**
-	 * Subtracts the specified quantity of each waveform in {@code waveforms}
-	 * from every element in the waveform. {@code waveforms} is a
-	 * one-dimensional array composed of a series of concatenated records, each
-	 * of length {@code recordLength}. The operation is carried out on 
-	 * {@code waveforms} in place.
-	 *
-	 * @param waveforms	   array of concatenated waveforms, assumed to be of length
-	 *                     {@code recordLength}
-	 * @param recordLength length of each record in {@code waveforms}
-	 * @param operation    {@code MEAN} subtracts the mean value of each
-	 *                     waveform from all its elements; {@code MEDIAN}
-	 *                     subtracts the median value of each waveform all its
-	 *                     elements; {@code LINEAR_FIT} computes the best fit
-	 *                     line to the entire waveform and subtracts from each
-	 *                     point the value of the line at that point
-	 */
-	public static final void execute(float[] waveforms, int recordLength, int operation)
-	{
-		if (waveforms != null && waveforms.length >= recordLength && recordLength > 0 && waveforms.length % recordLength == 0) {
-
-			// compute number of records
-			int numRecords = waveforms.length / recordLength;
-
-			switch (operation) {
-
-				case MEAN: {
-					for (int i = 0; i < numRecords; i++) {
-
-						// offset to current record
-						int offset = i * recordLength;
-
-						// compute mean for current record
-						float mean = WaveformUtils.mean(waveforms, offset, offset + recordLength);
-
-						// subtract mean from current record in place
-						WaveformUtils.addScalarInPlace(waveforms, offset, offset + recordLength, -mean);
-					}
-
-					break;
-				}
-
-				case MEDIAN: {
-					for (int i = 0; i < numRecords; i++) {
-
-						// offset to current record
-						int offset = i * recordLength;
-
-						// compute median for current record
-						float[] temp = Arrays.copyOfRange(waveforms, offset, offset + recordLength);
-						float median = WaveformUtils.medianAndSort(temp);
-
-						// subtract mean from current record in place
-						WaveformUtils.addScalarInPlace(waveforms, offset, offset + recordLength, -median);
-					}
-
-					break;
-				}
-
-				case LINEAR_FIT: {
-					// precompute global parameters for linear fit
-					double n = (double) recordLength;
-					double sumX = 0.5 * n * (n - 1.0);
-					double sumXsumX = sumX * sumX;
-					double sumXX = sumX * (2.0 * n - 1.0) / 3.0;
-
-					for (int i = 0; i < numRecords; i++) {
-
-						// offset to current record
-						int offset = i * recordLength;
-
-						// compute linear fit parameters for current record
-						double sumY = 0.0;
-						double sumXY = 0.0;
-						for (int j = 0; j < recordLength; j++) {
-							sumY += waveforms[offset + j];
-							sumXY += j * waveforms[offset + j];
-						}
-						double slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumXsumX);
-						double intercept = (sumY - slope * sumX) / n;
-
-						// subtract median from current record in place
-						double value = intercept;
-						for (int j = 0; j < recordLength; j++) {
-							waveforms[offset + j] -= (float)value;
-							value += slope;
-						}
-
-					}
-
-					break;
-				}
-
-				default: {
-					break;
-				}
-				
-			}
-
+		execute(pixelsDouble, width, operationChoice);
+		
+		for (int i=0; i<pixels.length; i++) {
+			pixels[i] = (float)pixelsDouble[i];
 		}
-
 	}
 	
 	public static final void execute(double[] waveforms, int recordLength, int operation)

@@ -25,6 +25,12 @@ import ij.process.ImageProcessor;
 import java.util.Arrays;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 
 /**
  * Static utility methods for waveform analysis in ImageJ plugins.
@@ -678,218 +684,6 @@ public class WaveformUtils
 		}
 	}
 
-	//--------------------FFT Methods-----------------------------------------//
-	/**
-	 * Computes complex FFT of real and imaginary input arrays (in place).	For
-	 * efficiency, no error checking is performed on real and imaginary input
-	 * array lengths. The length of the input array range <b>must</b> be
-	 * identical and equal to a power of 2, otherwise a runtime exception may be
-	 * thrown. Normalization is consistent with NI LabVIEW&reg FFT
-	 * implementation.
-	 *
-	 * @param ar        input array containing the real part of the waveform
-	 * @param ai        input array containing the imaginary part of the
-	 *                  waveform
-	 * @param isForward	true for forward FFT, false for inverse FFT
-	 */
-	public static final void fftComplexPowerOf2(double ar[], double ai[], boolean isForward)
-	{
-		fftComplexPowerOf2(ar, ai, 0, ar.length, isForward);
-	}
-
-	/**
-	 * Computes complex FFT of real and imaginary input arrays (in place) within
-	 * the specified range. For efficiency, no error checking is performed on
-	 * input data range limits or length of real and imaginary input arrays. The
-	 * length of the input array range <b>must</b> be identical and equal to a
-	 * power of 2, otherwise a runtime exception may be thrown.	Normalization is
-	 * consistent with NI LabVIEW&reg FFT implementation.
-	 *
-	 *
-	 * @param ar        input array containing the real part of the waveform
-	 * @param ai        input array containing the imaginary part of the
-	 *                  waveform
-	 * @param from      initial index of the range to compute the FFT, inclusive
-	 * @param to        final index of the range to compute the FFT, exclusive
-	 * @param isForward	true for forward FFT, false for inverse FFT
-	 */
-	public static final void fftComplexPowerOf2(double ar[], double ai[], int from, int to, boolean isForward)
-	{
-		int n = to - from;
-		double scale = 1.0;
-		double c = -Math.PI;
-		if (!isForward) {
-			scale /= n;
-			c *= -1;
-		}
-		int i, j;
-		for (i = j = 0; i < n; ++i) {
-			if (j >= i) {
-				int ii = i + from;
-				int jj = j + from;
-				double tempr = ar[jj] * scale;
-				double tempi = ai[jj] * scale;
-				ar[jj] = ar[ii] * scale;
-				ai[jj] = ai[ii] * scale;
-				ar[ii] = tempr;
-				ai[ii] = tempi;
-			}
-			int m = n / 2;
-			while (m >= 1 && j >= m) {
-				j -= m;
-				m /= 2;
-			}
-			j += m;
-		}
-
-		int mmax, istep;
-		double delta, alpha, beta, temp, cosMDelta, cosMDeltaPlusOne, sinMDelta, sinMDeltaPlusOne, tr, ti;
-		for (mmax = 1, istep = 2 * mmax; mmax < n; mmax = istep, istep = 2 * mmax) {
-
-			// Set up trig recursions
-			delta = c / (double) mmax;
-			beta = Math.sin(delta);
-			temp = Math.sin(delta / 2.0);
-			alpha = 2.0 * temp * temp;
-			cosMDelta = 1.0;
-			sinMDelta = 0.0;
-
-			for (int m = 0; m < mmax; ++m) {
-				for (i = m; i < n; i += istep) {
-					j = i + mmax;
-					int ii = i + from;
-					int jj = j + from;
-					tr = cosMDelta * ar[jj] - sinMDelta * ai[jj];
-					ti = cosMDelta * ai[jj] + sinMDelta * ar[jj];
-					ar[jj] = ar[ii] - tr;
-					ai[jj] = ai[ii] - ti;
-					ar[ii] += tr;
-					ai[ii] += ti;
-				}
-				cosMDeltaPlusOne = cosMDelta - (alpha * cosMDelta + beta * sinMDelta);
-				sinMDeltaPlusOne = sinMDelta - (alpha * sinMDelta - beta * cosMDelta);
-				cosMDelta = cosMDeltaPlusOne;
-				sinMDelta = sinMDeltaPlusOne;
-			}
-		}
-	}
-
-	/**
-	 * Computes complex FFT of real-valued input data (in place). Imaginary
-	 * input array values are ignored. The imaginary part of the transformed
-	 * input is stored in array {@code ai}, which must be the same as the real
-	 * input array {@code ar}. For efficiency, no null or length checking is
-	 * performed on real and imaginary input arrays. The length of the input
-	 * array range <b>must</b> be identical and equal to a power of 2, otherwise
-	 * a runtime exception may be thrown.Normalization is consistent with NI
-	 * LabVIEW&reg FFT implementation.
-	 *
-	 * @param ar input array containing the real-valued waveform, which is
-	 *           transformed in place and subsequently holds the real portion of
-	 *           the transform
-	 * @param ai array which will hold complex part of the transform (any input
-	 *           values are ignored)
-	 */
-	public static final void fftRealPowerOf2Forward(double ar[], double[] ai)
-	{
-		int nn = ar.length;
-		int n = nn / 2;
-		double delta = Math.PI / n;
-		double sinHalfDelta = Math.sin(0.5 * delta);
-		double alpha = 2 * sinHalfDelta * sinHalfDelta;
-		double beta = Math.sin(delta);
-
-		// initialize real and imaginary arrays with odd and even element indices of input real array
-		for (int i = 0; i < n; i++) {
-			ai[i] = ar[2 * i + 1];
-			ar[i] = ar[2 * i];
-		}
-
-		// perform forward FFT using first half of real and imaginary parts
-		fftComplexPowerOf2(ar, ai, 0, n, true);
-
-		// set up trig recursions
-		double cosNDelta = 1 - alpha;
-		double sinNDelta = beta;
-		double cosNPlusOneDelta, sinNPlusOneDelta;
-
-		// store intermediate results in second (redundant) half of input arrays
-		for (int i = 1; i < n; i++) {
-			ar[i + n] = 0.5 * (ar[i] + ar[n - i] + cosNDelta * (ai[i] + ai[n - i]) - sinNDelta * (ar[i] - ar[n - i]));
-			ai[i + n] = 0.5 * (ai[i] - ai[n - i] - sinNDelta * (ai[i] + ai[n - i]) - cosNDelta * (ar[i] - ar[n - i]));
-			cosNPlusOneDelta = cosNDelta - (alpha * cosNDelta + beta * sinNDelta);
-			sinNPlusOneDelta = sinNDelta - (alpha * sinNDelta - beta * cosNDelta);
-			cosNDelta = cosNPlusOneDelta;
-			sinNDelta = sinNPlusOneDelta;
-		}
-
-		// reorder results
-		double ar0 = ar[0] + ai[0];
-		double arn = ar[0] - ai[0];
-		ar[0] = ar0;
-		ai[0] = 0.0;
-		for (int i = 1; i < n; i++) {
-			ar[i] = ar[i + n];
-			ai[i] = ai[i + n];
-		}
-		ar[n] = arn;
-		ai[n] = 0.0;
-
-		// overwrite intermediate results with symmetric/antisymmetric copies
-		for (int i = 1; i < n; i++) {
-			ar[2 * n - i] = ar[i];
-			ai[2 * n - i] = -ai[i];
-		}
-
-	}
-
-//	public static final void fftRealPowerOf2Inverse(double ar[], double[] ai)
-//	{
-//		int nn = ar.length;
-//		int n = nn / 2;
-//		double delta = -Math.PI / n;
-//		double sinHalfDelta = Math.sin(0.5 * delta);
-//		double alpha = 2 * sinHalfDelta * sinHalfDelta;
-//		double beta = Math.sin(delta);
-//
-//		// set up trig recursions
-//		double cosNDelta = 1 - alpha;
-//		double sinNDelta = beta;
-//		double cosNPlusOneDelta, sinNPlusOneDelta;
-//
-//		// store intermediate results in second (redundant) half of input arrays
-//		for (int i = 1; i < n; i++) {
-//			ar[i + n] = 0.5 * (ar[i] + ar[n - i] + cosNDelta * (ai[i] + ai[n - i]) - sinNDelta * (ar[i] - ar[n - i]));
-//			ai[i + n] = 0.5 * (ai[i] - ai[n - i] - sinNDelta * (ai[i] + ai[n - i]) - cosNDelta * (ar[i] - ar[n - i]));
-//			cosNPlusOneDelta = cosNDelta - (alpha * cosNDelta + beta * sinNDelta);
-//			sinNPlusOneDelta = sinNDelta - (alpha * sinNDelta - beta * cosNDelta);
-//			cosNDelta = cosNPlusOneDelta;
-//			sinNDelta = sinNPlusOneDelta;
-//		}
-//
-//		// perform inverse FFT using second half of real and imaginary parts
-//		fftComplexPowerOf2(ar, ai, n, nn, false);
-//
-//		// reorder results
-//		double ar0 = ar[n] + ai[n];
-//		double arn = ar[n] - ai[n];
-//		ar[0] = ar0;
-//		ai[0] = 0.0;
-//		for (int i = 1; i < n; i++) {
-//			ar[i] = ar[i + n];
-//			ai[i] = ai[i + n];
-//		}
-//		ar[n] = arn;
-//		ai[n] = 0.0;
-//
-//		// overwrite intermediate results with symmetric/antisymmetric copies
-//		for (int i = 1; i < n; i++) {
-//			ar[2 * n - i] = ar[i];
-//			ai[2 * n - i] = -ai[i];
-//		}
-//
-//	}
-
 	//--------------------hilbertTransform Methods----------------------------//
 	/**
 	 * Computes discrete Hilbert transform of the input array (in place) using
@@ -912,7 +706,7 @@ public class WaveformUtils
 		double[] aIm = new double[n];
 
 		// perform FFT
-		fftRealPowerOf2Forward(a, aIm);
+		FastFourierTransformer.transformInPlace(new double[][]{a, aIm}, DftNormalization.STANDARD, TransformType.FORWARD);
 
 		// zero out DC and Nyquist components
 		a[0] = aIm[0] = a[nOver2] = aIm[nOver2] = 0.0;
@@ -931,20 +725,7 @@ public class WaveformUtils
 			aIm[i] = c * temp;
 		}
 
-		fftComplexPowerOf2(a, aIm, false);
-	}
-
-	//--------------------power-of-2 Methods----------------------------------//
-	/**
-	 * Determines if an integer is a positive integral power of 2.
-	 *
-	 * @param n	input integer
-	 * @return	true if {@code n} is greater than zero and a power of 2, false
-	 *         otherwise
-	 */
-	public static final boolean isPowerOf2(int n)
-	{
-		return ((n != 0) && ((n & (n - 1)) == 0));
+		FastFourierTransformer.transformInPlace(new double[][]{a, aIm}, DftNormalization.STANDARD, TransformType.INVERSE);
 	}
 
 	/**
@@ -1089,123 +870,6 @@ public class WaveformUtils
 		return paddedArrays;
 	}
 
-//--------------------reverseArray Methods---------------------------------//
-	/**
-	 * Reverses input array in place. No action is performed for {@code null}
-	 * input.
-	 *
-	 * @param a input array
-	 */
-	public static final void reverseArrayInPlace(double[] a)
-	{
-		if (a != null) {
-			reverseArrayInPlace(a, 0, a.length);
-		}
-	}
-
-	/**
-	 * Reverses elements of input array between indices {@code from} (inclusive)
-	 * and {@code to} (exclusive) in place. No error checking is performed on
-	 * range limits; if input parameters are invalid, runtime errors may occur.
-	 * No action is performed if the input array is {@code null}.
-	 *
-	 * @param a    input array
-	 * @param from initial index of the range in which to reverse elements,
-	 *             inclusive
-	 * @param to   final index of the range in which to reverse elements,
-	 *             exclusive
-	 */
-	public static final void reverseArrayInPlace(double[] a, int from, int to)
-	{
-		if (a != null) {
-			int n = to - from;
-			int halfN = n / 2;
-			for (int i = 0; i < halfN; i++) {
-				double tmp = a[from + i];
-				a[from + i] = a[from + (n - 1 - i)];
-				a[from + (n - 1 - i)] = tmp;
-			}
-		}
-	}
-
-	/**
-	 * Reverses input array in place. No action is performed for {@code null}
-	 * input.
-	 *
-	 * @param a input array
-	 */
-	public static final void reverseArrayInPlace(float[] a)
-	{
-		if (a != null) {
-			reverseArrayInPlace(a, 0, a.length);
-		}
-	}
-
-	/**
-	 * Reverses elements of input array between indices {@code from} (inclusive)
-	 * and {@code to} (exclusive) in place. No error checking is performed on
-	 * range limits; if input parameters are invalid, runtime errors may occur.
-	 * No action is performed if the input array is {@code null}.
-	 *
-	 * @param a    input array
-	 * @param from initial index of the range in which to reverse elements,
-	 *             inclusive
-	 * @param to   final index of the range in which to reverse elements,
-	 *             exclusive
-	 */
-	public static final void reverseArrayInPlace(float[] a, int from, int to)
-	{
-		if (a != null) {
-			int n = to - from;
-			int halfN = n / 2;
-			for (int i = 0; i < halfN; i++) {
-				float tmp = a[from + i];
-				a[from + i] = a[from + (n - 1 - i)];
-				a[from + (n - 1 - i)] = tmp;
-			}
-		}
-
-	}
-
-	/**
-	 * Reverses input array in place. No action is performed for {@code null}
-	 * input.
-	 *
-	 * @param a input array
-	 */
-	public static final void reverseArrayInPlace(int[] a)
-	{
-		if (a != null) {
-			reverseArrayInPlace(a, 0, a.length);
-		}
-	}
-
-	/**
-	 * Reverses elements of input array between indices {@code from} (inclusive)
-	 * and {@code to} (exclusive) in place. No error checking is performed on
-	 * range limits; if input parameters are invalid, runtime errors may occur.
-	 * No action is performed if the input array is {@code null}.
-	 *
-	 * @param a    input array
-	 * @param from initial index of the range in which to reverse elements,
-	 *             inclusive
-	 * @param to   final index of the range in which to reverse elements,
-	 *             exclusive
-	 */
-	public static final void reverseArrayInPlace(int[] a, int from, int to)
-	{
-		if (a != null) {
-			int n = to - from;
-			int halfN = n / 2;
-			for (int i = 0; i < halfN; i++) {
-				int tmp = a[from + i];
-				a[from + i] = a[from + (n - 1 - i)];
-				a[from + (n - 1 - i)] = tmp;
-			}
-		}
-
-	}
-
 	//--------------------rotateArray Methods---------------------------------//
 	/**
 	 * Rotates input array in place by specified number of points.{@code n>0}
@@ -1252,14 +916,14 @@ public class WaveformUtils
 			}
 
 			if (n > 0) {
-				reverseArrayInPlace(a, from, from + size);
+				ArrayUtils.reverse(a, from, from + size);
 			}
 
-			reverseArrayInPlace(a, from, from + absN);
-			reverseArrayInPlace(a, from + absN, from + size);
+			ArrayUtils.reverse(a, from, from + absN);
+			ArrayUtils.reverse(a, from + absN, from + size);
 
 			if (n < 0) {
-				reverseArrayInPlace(a, from, from + size);
+				ArrayUtils.reverse(a, from, from + size);
 			}
 		}
 	}
@@ -1308,14 +972,14 @@ public class WaveformUtils
 			}
 
 			if (n > 0) {
-				reverseArrayInPlace(a, from, from + size);
+				ArrayUtils.reverse(a, from, from + size);
 			}
 
-			reverseArrayInPlace(a, from, from + absN);
-			reverseArrayInPlace(a, from + absN, from + size);
+			ArrayUtils.reverse(a, from, from + absN);
+			ArrayUtils.reverse(a, from + absN, from + size);
 
 			if (n < 0) {
-				reverseArrayInPlace(a, from, from + size);
+				ArrayUtils.reverse(a, from, from + size);
 			}
 		}
 	}
@@ -1353,12 +1017,12 @@ public class WaveformUtils
 
 		double[] im = new double[n];
 
-		fftComplexPowerOf2(re, im, true);
+		FastFourierTransformer.transformInPlace(new double[][]{re, im}, DftNormalization.STANDARD, TransformType.FORWARD);
 		for (int i = 0; i < n; i++) {
 			re[i] *= filterCoefficients[i];
 			im[i] *= filterCoefficients[i];
 		}
-		fftComplexPowerOf2(re, im, false);
+		FastFourierTransformer.transformInPlace(new double[][]{re, im}, DftNormalization.STANDARD, TransformType.INVERSE);
 
 		return re;
 	}
@@ -1380,41 +1044,6 @@ public class WaveformUtils
 	public static final double[] freqDomainFilter(double[] a, double[] filterCoefficients)
 	{
 		return freqDomainFilter(a, 0, a.length, filterCoefficients);
-	}
-
-	/**
-	 * Filters multiple real-valued waveforms (assumed to be concatenated
-	 * sequentially in {@code re} in the frequency domain by Fourier
-	 * transforming each waveform, multiplying the resulting real and imaginary
-	 * portions by {@code filterCoefficients} element-by-element, and inverse
-	 * Fourier transforming. Results are returned in place.
-	 * {@code waveformLength} <b>must</b> be a power of 2, otherwise unexpected
-	 * results or runtime errors may occur. If
-	 * {@code filterCoefficients.length!=waveformLength}, input array is left
-	 * unchanged.
-	 *
-	 * @param re
-	 * @param waveformLength
-	 * @param filterCoefficients
-	 */
-	public static final void freqDomainFilterMultipleWaveformsInPlace(double[] re, int waveformLength, double[] filterCoefficients)
-	{
-		if (filterCoefficients.length != waveformLength) {
-			return;
-		}
-
-		int numRecords = re.length / waveformLength;
-		double[] im = new double[waveformLength * numRecords];
-
-		for (int i = 0; i < numRecords; i++) {
-			int offset = i * waveformLength;
-			fftComplexPowerOf2(re, im, offset, offset + waveformLength, true);
-			for (int j = 0; j < waveformLength; j++) {
-				re[offset + j] *= filterCoefficients[j];
-				im[offset + j] *= filterCoefficients[j];
-			}
-			fftComplexPowerOf2(re, im, offset, offset + waveformLength, false);
-		}
 	}
 
 	//--------------------maxIndex/minIndex Methods---------------------------//
@@ -2671,183 +2300,6 @@ public class WaveformUtils
 		return deriv;
 	}
 
-	//--------------------unbox Array Methods---------------------------------//
-	/**
-	 * Returns array of unboxed primitive {@code byte}s equivalent to input
-	 * {@code Byte} array. Output is {@code null} if input is {@code null}.
-	 *
-	 * @param a input array of {@code Byte}s
-	 * @return unboxed array of {@code byte}s, unless input is {@code null}, in
-	 *         which case the output is also {@code null}
-	 */
-	public static final byte[] unboxArray(Byte[] a)
-	{
-		byte[] unboxedArray = null;
-
-		if (a != null) {
-			unboxedArray = new byte[a.length];
-			for (int i = 0; i < a.length; i++) {
-				unboxedArray[i] = a[i];
-			}
-		}
-
-		return unboxedArray;
-	}
-
-	/**
-	 * Returns array of unboxed primitive {@code int}s equivalent to input
-	 * {@code Integer} array. Output is {@code null} if input is {@code null}.
-	 *
-	 * @param a input array of {@code Integer}s
-	 * @return unboxed array of {@code int}s, unless input is {@code null}, in
-	 *         which case the output is also {@code null}
-	 */
-	public static final int[] unboxArray(Integer[] a)
-	{
-		int[] unboxedArray = null;
-
-		if (a != null) {
-			unboxedArray = new int[a.length];
-			for (int i = 0; i < a.length; i++) {
-				unboxedArray[i] = a[i];
-			}
-		}
-
-		return unboxedArray;
-	}
-
-	/**
-	 * Returns array of unboxed primitive {@code short}s equivalent to input
-	 * {@code Short} array. Output is {@code null} if input is {@code null}.
-	 *
-	 * @param a input array of {@code Short}s
-	 * @return unboxed array of {@code short}s, unless input is {@code null}, in
-	 *         which case the output is also {@code null}
-	 */
-	public static final short[] unboxArray(Short[] a)
-	{
-		short[] unboxedArray = null;
-
-		if (a != null) {
-			unboxedArray = new short[a.length];
-			for (int i = 0; i < a.length; i++) {
-				unboxedArray[i] = a[i];
-			}
-		}
-
-		return unboxedArray;
-	}
-
-	/**
-	 * Returns array of unboxed primitive {@code long}s equivalent to input
-	 * {@code Long} array. Output is {@code null} if input is {@code null}.
-	 *
-	 * @param a input array of {@code Long}s
-	 * @return unboxed array of {@code long}s, unless input is {@code null}, in
-	 *         which case the output is also {@code null}
-	 */
-	public static final long[] unboxArray(Long[] a)
-	{
-		long[] unboxedArray = null;
-
-		if (a != null) {
-			unboxedArray = new long[a.length];
-			for (int i = 0; i < a.length; i++) {
-				unboxedArray[i] = a[i];
-			}
-		}
-
-		return unboxedArray;
-	}
-
-	/**
-	 * Returns array of unboxed primitive {@code float}s equivalent to input
-	 * {@code Float} array. Output is {@code null} if input is {@code null}.
-	 *
-	 * @param a input array of {@code Float}s
-	 * @return unboxed array of {@code float}s, unless input is {@code null}, in
-	 *         which case the output is also {@code null}
-	 */
-	public static final float[] unboxArray(Float[] a)
-	{
-		float[] unboxedArray = null;
-
-		if (a != null) {
-			unboxedArray = new float[a.length];
-			for (int i = 0; i < a.length; i++) {
-				unboxedArray[i] = a[i];
-			}
-		}
-
-		return unboxedArray;
-	}
-
-	/**
-	 * Returns array of unboxed primitive {@code double}s equivalent to input
-	 * {@code Double} array. Output is {@code null} if input is {@code null}.
-	 *
-	 * @param a input array of {@code Double}s
-	 * @return unboxed array of {@code double}s, unless input is {@code null},
-	 *         in which case the output is also {@code null}
-	 */
-	public static final double[] unboxArray(Double[] a)
-	{
-		double[] unboxedArray = null;
-
-		if (a != null) {
-			unboxedArray = new double[a.length];
-			for (int i = 0; i < a.length; i++) {
-				unboxedArray[i] = a[i];
-			}
-		}
-
-		return unboxedArray;
-	}
-
-	/**
-	 * Returns array of unboxed primitive {@code char}s equivalent to input
-	 * {@code Character} array. Output is {@code null} if input is {@code null}.
-	 *
-	 * @param a input array of {@code Character}s
-	 * @return unboxed array of {@code char}s, unless input is {@code null}, in
-	 *         which case the output is also {@code null}
-	 */
-	public static final char[] unboxArray(Character[] a)
-	{
-		char[] unboxedArray = null;
-
-		if (a != null) {
-			unboxedArray = new char[a.length];
-			for (int i = 0; i < a.length; i++) {
-				unboxedArray[i] = a[i];
-			}
-		}
-
-		return unboxedArray;
-	}
-
-	/**
-	 * Returns array of unboxed primitive {@code boolean}s equivalent to input
-	 * {@code Boolean} array. Output is {@code null} if input is {@code null}.
-	 *
-	 * @param a input array of {@code Boolean}s
-	 * @return unboxed array of {@code boolean}s, unless input is {@code null},
-	 *         in which case the output is also {@code null}
-	 */
-	public static final boolean[] unboxArray(Boolean[] a)
-	{
-		boolean[] unboxedArray = null;
-
-		if (a != null) {
-			unboxedArray = new boolean[a.length];
-			for (int i = 0; i < a.length; i++) {
-				unboxedArray[i] = a[i];
-			}
-		}
-
-		return unboxedArray;
-	}
-
 	//--------------------global minAndMax Methods----------------------------//
 	/**
 	 * Compute the global minimum and maximum pixel values of an input ImageJ
@@ -2973,7 +2425,7 @@ public class WaveformUtils
 			switch (windowType) {
 
 				case BLACKMAN: {
-					double c = 2.0 * Math.PI / n;
+					double c = MathUtils.TWO_PI / n;
 					for (int i = 0; i < n; i++) {
 						w[i] = 0.42 - 0.5 * Math.cos(i * c) + 0.08 * Math.cos(2 * i * c);
 					}
@@ -2981,7 +2433,7 @@ public class WaveformUtils
 				}
 
 				case BLACKMAN_HARRIS: {
-					double c = 2.0 * Math.PI / n;
+					double c = MathUtils.TWO_PI / n;
 					for (int i = 0; i < n; i++) {
 						w[i] = 0.42323 - 0.49755 * Math.cos(i * c) + 0.07922 * Math.cos(2 * i * c);
 					}
@@ -2989,7 +2441,7 @@ public class WaveformUtils
 				}
 
 				case BLACKMAN_NUTTALL: {
-					double c = 2.0 * Math.PI / n;
+					double c = MathUtils.TWO_PI / n;
 					for (int i = 0; i < n; i++) {
 						w[i] = 0.3635819 - 0.4891775 * Math.cos(i * c) + 0.1365995 * Math.cos(2 * i * c) - 0.0106411 * Math.cos(3 * i * c);
 					}
@@ -3022,7 +2474,7 @@ public class WaveformUtils
 				}
 
 				case EXACT_BLACKMAN: {
-					double c = 2.0 * Math.PI / n;
+					double c = MathUtils.TWO_PI / n;
 					for (int i = 0; i < n; i++) {
 						w[i] = (7938.0 - 9240.0 * Math.cos(i * c) + 1430.0 * Math.cos(2 * i * c)) / 18608.0;
 					}
@@ -3044,7 +2496,7 @@ public class WaveformUtils
 
 				case FLAT_TOP: {
 					double a0 = 0.21557895, a1 = 0.41663158, a2 = 0.277263158, a3 = 0.083578947, a4 = 0.006947368;
-					double c = 2.0 * Math.PI / n;
+					double c = MathUtils.TWO_PI / n;
 					for (int i = 0; i < n; i++) {
 						w[i] = a0 - a1 * Math.cos(i * c) + a2 * Math.cos(2 * i * c) - a3 * Math.cos(3 * i * c) + a4 * Math.cos(4 * i * c);
 					}
@@ -3063,7 +2515,7 @@ public class WaveformUtils
 				}
 
 				case HAMMING: {
-					double c = 2.0 * Math.PI / n;
+					double c = MathUtils.TWO_PI / n;
 					for (int i = 0; i < n; i++) {
 						w[i] = 0.54 - 0.46 * Math.cos(i * c);
 					}
@@ -3071,7 +2523,7 @@ public class WaveformUtils
 				}
 
 				case HANNING: {
-					double c = 2.0 * Math.PI / n;
+					double c = MathUtils.TWO_PI / n;
 					for (int i = 0; i < n; i++) {
 						w[i] = 0.5 * (1.0 - Math.cos(i * c));
 					}
@@ -3090,7 +2542,7 @@ public class WaveformUtils
 				case MODIFIED_BARTLETT_HANNING: {
 					for (int i = 0; i < n; i++) {
 						double c = (double) i / (double) n - 0.5;
-						w[i] = 0.62 - 0.48 * Math.abs(c) + 0.38 * Math.cos(2.0 * Math.PI * (c));
+						w[i] = 0.62 - 0.48 * Math.abs(c) + 0.38 * Math.cos(MathUtils.TWO_PI * (c));
 					}
 					break;
 				}
@@ -3101,7 +2553,7 @@ public class WaveformUtils
 						if (c <= 0.5) {
 							w[i] = 1.0 - 6.0 * c * c + 6.0 * c * c * c;
 						} else {
-							w[i] = 2.0 * WaveformUtils.pow(1.0 - c, 3);
+							w[i] = 2.0 * FastMath.pow(1.0 - c, 3);
 						}
 					}
 					break;
@@ -3208,7 +2660,7 @@ public class WaveformUtils
 			switch (windowType) {
 
 				case BLACKMAN: {
-					double c = 2.0 * Math.PI / n;
+					double c = MathUtils.TWO_PI / n;
 					for (int i = 1, j = i + radius + 1; i <= radius; i++, j++) {
 						w[i] = 0.42 - 0.5 * Math.cos(j * c) + 0.08 * Math.cos(2 * j * c);
 					}
@@ -3254,7 +2706,7 @@ public class WaveformUtils
 				}
 
 				case EXACT_BLACKMAN: {
-					double c = 2.0 * Math.PI / (2 * radius);
+					double c = MathUtils.TWO_PI / (2 * radius);
 					for (int i = 0, j = i + radius; i <= radius; i++, j++) {
 						w[i] = (7938.0 - 9240.0 * Math.cos(j * c) + 1430.0 * Math.cos(2 * j * c)) / 18608.0;
 					}
@@ -3273,7 +2725,7 @@ public class WaveformUtils
 
 				case FLAT_TOP: {
 					double a0 = 0.21557895, a1 = 0.41663158, a2 = 0.277263158, a3 = 0.083578947, a4 = 0.006947368;
-					double c = 2.0 * Math.PI / (2 * radius);
+					double c = MathUtils.TWO_PI / (2 * radius);
 					for (int i = 1, j = i + radius; i <= radius; i++, j++) {
 						w[i] = a0 - a1 * Math.cos(j * c) + a2 * Math.cos(2 * j * c) - a3 * Math.cos(3 * j * c) + a4 * Math.cos(4 * j * c);
 					}
@@ -3318,7 +2770,7 @@ public class WaveformUtils
 				case MODIFIED_BARTLETT_HANNING: {
 					for (int i = 1, j = i + radius + 1; i <= radius; i++, j++) {
 						double c = (double) j / (double) n - 0.5;
-						w[i] = 0.62 - 0.48 * c + 0.38 * Math.cos(2.0 * Math.PI * (c));
+						w[i] = 0.62 - 0.48 * c + 0.38 * Math.cos(MathUtils.TWO_PI * (c));
 					}
 					break;
 				}
@@ -3329,7 +2781,7 @@ public class WaveformUtils
 						if (c <= 0.5) {
 							w[i] = 1.0 - 6.0 * c * c + 6.0 * c * c * c;
 						} else {
-							w[i] = 2.0 * WaveformUtils.pow(1.0 - c, 3);
+							w[i] = 2.0 * FastMath.pow(1.0 - c, 3);
 						}
 					}
 					break;
@@ -3394,32 +2846,6 @@ public class WaveformUtils
 	public static final double log2(double x)
 	{
 		return (1.4426950408889634074 * Math.log(x));
-	}
-
-	/**
-	 * Computes {@code a^b} for integer exponents. Works for both positive and
-	 * negative values of the exponent {@code b}.
-	 *
-	 * @param	a	base for exponentiation
-	 * @param	b	integral value of exponent
-	 * @return	{@code a} raised to the {@code b}<sup>th</sup> power
-	 */
-	public static final double pow(double a, int b)
-	{
-		if (b < 0.0) {
-			a = 1.0 / a;
-			b *= -1;
-		}
-		double result = 1.0;
-		while (b != 0) {
-			if ((b & 1) == 1) {
-				result *= a;
-			}
-			b >>= 1;
-			a *= a;
-		}
-
-		return result;
 	}
 
 	/**

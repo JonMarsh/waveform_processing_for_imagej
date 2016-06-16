@@ -8,6 +8,10 @@ import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
 import java.awt.AWTEvent;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
+import org.apache.commons.math3.util.FastMath;
 
 
 public class ButterworthFilter implements ExtendedPlugInFilter, DialogListener
@@ -100,13 +104,13 @@ public class ButterworthFilter implements ExtendedPlugInFilter, DialogListener
 		if (!isLowPass) {
 			fRatio = 1.0 / fRatio;
 		}
-		coeffs[length / 2] = 1.0 / Math.hypot(1.0, WaveformUtils.pow(fRatio, 2 * numPoles));
+		coeffs[length / 2] = 1.0 / Math.hypot(1.0, FastMath.pow(fRatio, 2 * numPoles));
 		for (int i = 1; i < length / 2; i++) {
 			fRatio = i * deltaFMHz / cutoffFreqMHz;
 			if (!isLowPass) {
 				fRatio = 1.0 / fRatio;
 			}
-			coeffs[i] = 1.0 / Math.hypot(1.0, WaveformUtils.pow(fRatio, 2 * numPoles));
+			coeffs[i] = 1.0 / Math.hypot(1.0, FastMath.pow(fRatio, 2 * numPoles));
 			coeffs[length - i] = coeffs[i];
 		}
 
@@ -168,12 +172,12 @@ public class ButterworthFilter implements ExtendedPlugInFilter, DialogListener
 			}
 
 			// filter
-			WaveformUtils.fftComplexPowerOf2(re, im, true);
+			FastFourierTransformer.transformInPlace(new double[][]{re, im}, DftNormalization.STANDARD, TransformType.FORWARD);
 			for (int j = 0; j < paddedWidth; j++) {
 				re[j] *= filterCoeffs[j];
 				im[j] *= filterCoeffs[j];
 			}
-			WaveformUtils.fftComplexPowerOf2(re, im, false);
+			FastFourierTransformer.transformInPlace(new double[][]{re, im}, DftNormalization.STANDARD, TransformType.INVERSE);
 
 			// copy data into original waveform array, truncating at original width
 			for (int j = 0; j < recordLength; j++) {

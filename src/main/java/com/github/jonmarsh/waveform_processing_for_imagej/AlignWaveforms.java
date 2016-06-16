@@ -7,8 +7,12 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 import java.awt.AWTEvent;
 import java.util.Arrays;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
 
 /**
  * This plug-in filter aligns each row of the image to a user-specified row (or
@@ -33,6 +37,11 @@ public class AlignWaveforms implements ExtendedPlugInFilter, DialogListener
 	@Override
 	public int setup(String arg, ImagePlus imp)
 	{
+		if (arg.equals("final")) {
+			IJ.resetMinAndMax();
+			return DONE;
+        }
+		
 		if (imp == null) {
 			IJ.noImage();
 			return DONE;
@@ -95,78 +104,14 @@ public class AlignWaveforms implements ExtendedPlugInFilter, DialogListener
 	public void run(ImageProcessor ip)
 	{
 		float[] pixels = (float[])ip.getPixels();
-
-		execute(pixels, seedWaveform, loIndex, hiIndex);
-	}
-
-	/**
-	 * Performs an in-place alignment of each array segment in {@code waveforms}
-	 * with {@code seedWavefom} within the specified range of indices.
-	 * {@code waveforms} is assumed to be composed of a series of signals (of
-	 * size given by {@code seedWaveform.length}) that are concatenated
-	 * sequentially in a one-dimensional array. The alignment is performed by
-	 * simple rotation of each segment.
-	 * <p>
-	 * @param waveforms	   array of concatenated waveforms, each of length
-	 *                     {@code seedWaveform.length}
-	 * @param seedWaveform	array with which to align each signal in
-	 *                     {@code waveforms}
-	 * @param from	        start index (inclusive) of subsection of
-	 *                     {@code seedWaveform} to be used for alignment
-	 * @param to           end index (exclusive) of subsection of
-	 *                     {@code seedWaveform} to be used for alignment
-	 */
-	public static void execute(final float[] waveforms, float[] seedWaveform, int from, int to)
-	{
-		final int w = seedWaveform.length;
-
-		// determine number of records
-		final int h = waveforms.length / w;
-
-		// compute padded waveform length
-		final int pw = w + WaveformUtils.amountToPadToNextPowerOf2(w);
-
-		// initialize seed waveform copy and compute FFT
-		final double[] seedRe = new double[pw];
-		final double[] seedIm = new double[pw];
-		for (int j = from; j < to; j++) {
-			seedRe[j] = (double)seedWaveform[j];
+		double[] pixelsDouble = Tools.toDouble(pixels);
+		
+		execute(pixelsDouble, Tools.toDouble(seedWaveform), loIndex, hiIndex);
+		
+		for (int i=0; i<pixels.length; i++) {
+			pixels[i] = (float)pixelsDouble[i];
 		}
-		WaveformUtils.fftComplexPowerOf2(seedRe, seedIm, true);
-
-		// loop over each waveform
-		for (int i = 0; i < h; i++) {
-			// compute row offset
-			int offset = i * w;
-
-			// initialize waveform copies
-			double[] tempRe = new double[pw];
-			double[] tempIm = new double[pw];
-			for (int j = 0; j < w; j++) {
-				tempRe[j] = (double)waveforms[offset + j];
-			}
-
-			// compute cross-correlation
-			WaveformUtils.fftComplexPowerOf2(tempRe, tempIm, true);
-			double[] corrRe = new double[pw];
-			double[] corrIm = new double[pw];
-			for (int j = 0; j < pw; j++) {
-				corrRe[j] = tempRe[j] * seedRe[j] + tempIm[j] * seedIm[j];
-				corrIm[j] = tempRe[j] * seedIm[j] - tempIm[j] * seedRe[j];
-			}
-			WaveformUtils.fftComplexPowerOf2(corrRe, corrIm, false);
-
-			// find index of maximum value of cross-correlation array
-			int maxIndex = WaveformUtils.maxIndex(corrRe);
-
-			// because of symmetry of fft, shift > pw/2 corresponds to leftward (negative) rotation
-			if (maxIndex >= pw / 2) {
-				maxIndex -= pw;
-			}
-
-			// rotate waveform in place
-			WaveformUtils.rotateArrayInPlace(waveforms, maxIndex, offset, offset + w);
-		}
+		
 	}
 
 	/**
@@ -200,7 +145,7 @@ public class AlignWaveforms implements ExtendedPlugInFilter, DialogListener
 		final double[] seedRe = new double[pw];
 		final double[] seedIm = new double[pw];
 		System.arraycopy(seedWaveform, from, seedRe, from, to - from);
-		WaveformUtils.fftComplexPowerOf2(seedRe, seedIm, true);
+		FastFourierTransformer.transformInPlace(new double[][]{seedRe, seedIm}, DftNormalization.STANDARD, TransformType.FORWARD);
 
 		// loop over each waveform
 		for (int i = 0; i < h; i++) {
@@ -215,14 +160,14 @@ public class AlignWaveforms implements ExtendedPlugInFilter, DialogListener
 			}
 
 			// compute cross-correlation
-			WaveformUtils.fftComplexPowerOf2(tempRe, tempIm, true);
+			FastFourierTransformer.transformInPlace(new double[][]{tempRe, tempIm}, DftNormalization.STANDARD, TransformType.FORWARD);
 			double[] corrRe = new double[pw];
 			double[] corrIm = new double[pw];
 			for (int j = 0; j < pw; j++) {
 				corrRe[j] = tempRe[j] * seedRe[j] + tempIm[j] * seedIm[j];
 				corrIm[j] = tempRe[j] * seedIm[j] - tempIm[j] * seedRe[j];
 			}
-			WaveformUtils.fftComplexPowerOf2(corrRe, corrIm, false);
+			FastFourierTransformer.transformInPlace(new double[][]{corrRe, corrIm}, DftNormalization.STANDARD, TransformType.INVERSE);
 
 			// find index of maximum value of cross-correlation array
 			int maxIndex = WaveformUtils.maxIndex(corrRe);

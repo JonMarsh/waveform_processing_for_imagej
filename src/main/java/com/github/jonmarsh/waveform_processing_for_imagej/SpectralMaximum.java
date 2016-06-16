@@ -7,8 +7,12 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 import java.awt.AWTEvent;
 import java.awt.TextField;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
 
 /**
  * Computes the (positive) frequency at which the power spectrum is maximum for
@@ -101,7 +105,7 @@ public class SpectralMaximum implements ExtendedPlugInFilter, DialogListener
 
 		windowParameterTextField.setEnabled(WaveformUtils.WindowType.values()[windowChoice].usesParameter());
 		
-		return (deltaT > 0.0 && !gd.invalidNumber());
+		return (!gd.invalidNumber() && deltaT > 0.0);
     }
 
 	@Override
@@ -109,95 +113,13 @@ public class SpectralMaximum implements ExtendedPlugInFilter, DialogListener
     {
         int currentSlice = pfr.getSliceNumber();
         float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
-		float[] spectralMaxValues = execute(pixels, width, deltaT, WaveformUtils.WindowType.values()[windowChoice], windowParameter);
+		double[] spectralMaxValues = execute(pixelsDouble, width, deltaT, WaveformUtils.WindowType.values()[windowChoice], windowParameter);
 		for (int i=0; i<height; i++) {
-			resultPixels[i*resultWidth+(currentSlice-1)] = spectralMaxValues[i];
+			resultPixels[i*resultWidth+(currentSlice-1)] = (float)spectralMaxValues[i];
 		}
     }
-
-	/**
-	 * Returns an array representing the value at which the power spectrum is
-	 * largest for each record in {@code waveforms}, where each record has
-	 * {@code recordLength} elements. Output is null if {@code waveforms==null},
-	 * {@code recordLength<=0}, {@code waveforms.length<recordLength}, or if
-	 * {@code waveforms.length} is not evenly divisible by {@code recordLength}.
-	 * Input waveforms are zero-padded to the next largest power-of-2 length if
-	 * the recordLength is not already a power of 2, in order to compute the
-	 * power spectrum using a traditional FFT routine. Frequency values are
-	 * given in units of {@code 1.0/deltaT}. Input waveforms are windowed with 
-	 * user-selected window function prior to padding and FFT.
-	 *
-	 * @param waveforms       one-dimensional array composed of a series of
-	 *                        concatenated records, each of size equal to
-	 *                        {@code recordLength}
-	 * @param recordLength    size of each record in {@code waveforms}
-	 * @param deltaT          sampling interval
-	 * @param windowType      window function
-	 * @param windowParameter used only for window functions that require it,
-	 *                        ignored otherwise
-	 * @return array of frequency values at which power spectrum is largest for
-	 *         each input waveform
-	 *
-	 */
-	public static float[] execute(float[] waveforms, int recordLength, double deltaT, WaveformUtils.WindowType windowType, double windowParameter)
-	{
-		if (waveforms != null && recordLength > 0 && waveforms.length >= recordLength && waveforms.length%recordLength == 0) {
-			
-			// compute number of records
-			int numRecords = waveforms.length/recordLength;
-			
-			// allocate output array
-			float[] spectralMaxValues = new float[numRecords];
-			
-			// determine padded record length
-			int paddedLength = recordLength + WaveformUtils.amountToPadToNextPowerOf2(recordLength);
-			
-			// generate window function values
-			double[] window = WaveformUtils.windowFunction(windowType, recordLength, windowParameter, false);
-			
-			// compute frequency spacing
-			double deltaF = 1.0/(paddedLength*deltaT);
-			
-			// loop over all records
-			for (int i=0; i<numRecords; i++) {
-				
-				// compute row offset
-				int offset = i*recordLength;
-				
-				// initialize temporary arrays
-				double[] realPadded = new double[paddedLength];
-				double[] imagPadded = new double[paddedLength];
-				for (int j=0; j<recordLength; j++) {
-					realPadded[j] = waveforms[offset+j]*window[j];
-				}
-				
-				// compute FFT
-				WaveformUtils.fftComplexPowerOf2(realPadded, imagPadded, true);
-				
-				// find frequency of the power spectrum max value
-				double magSqrd = realPadded[i]*realPadded[0] + imagPadded[i]*imagPadded[0];
-				double freq = 0.0;
-				double maxValue = magSqrd;
-				double maxFreq = freq;
-				for (int j=1; j<(paddedLength/2)+1; j++) {
-					magSqrd = realPadded[j]*realPadded[j] + imagPadded[j]*imagPadded[j];
-					freq += deltaF;
-					if (magSqrd > maxValue) {
-						maxValue = magSqrd;
-						maxFreq = freq;
-					}
-				}
-				spectralMaxValues[i] = (float)maxFreq;
-
-			}
-			
-			return spectralMaxValues;
-				
-		}
-		
-		return null;
-	}
 	
 	/**
 	 * Returns an array representing the value at which the power spectrum is
@@ -256,7 +178,8 @@ public class SpectralMaximum implements ExtendedPlugInFilter, DialogListener
 				}
 				
 				// compute FFT
-				WaveformUtils.fftComplexPowerOf2(realPadded, imagPadded, true);
+//				WaveformUtils.fftComplexPowerOf2(realPadded, imagPadded, true);
+				FastFourierTransformer.transformInPlace(new double[][]{realPadded, imagPadded}, DftNormalization.STANDARD, TransformType.FORWARD);
 				
 				// find frequency of the power spectrum max value
 				double magSqrd = realPadded[i]*realPadded[0] + imagPadded[i]*imagPadded[0];

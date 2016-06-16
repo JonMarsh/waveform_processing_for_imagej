@@ -28,24 +28,9 @@ public class InterpolateClippedRegionsTest
 	 * Test of execute method, of class InterpolateClippedRegions.
 	 */
 	@Test
-	public void testExecute_3args_1()
-	{
-		System.out.println("Test of InterpolateClippedRegions.execute(float[], int, double)");
-		float[] waveforms = null;
-		int recordLength = 0;
-		double threshold = 0.0;
-		float[] expResult = null;
-		float[] result = InterpolateClippedRegions.execute(waveforms, recordLength, threshold);
-		assertNull(result);
-	}
-
-	/**
-	 * Test of execute method, of class InterpolateClippedRegions.
-	 */
-	@Test
 	public void testExecute_3args_2()
 	{
-		System.out.println("Test of InterpolateClippedRegions.execute(double[], int, double)");
+		System.out.println("Test of InterpolateClippedRegions.execute()");
 		double[] waveforms = null;
 		int recordLength = 0;
 		double threshold = 0.0;

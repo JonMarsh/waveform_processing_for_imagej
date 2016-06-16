@@ -5,6 +5,7 @@ import ij.ImagePlus;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 
 /**
  * Computes the median value of each input waveform and returns the result in a
@@ -71,53 +72,13 @@ public class MedianValue implements ExtendedPlugInFilter
     {
         int currentSlice = pfr.getSliceNumber();
         float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
-		float[] medianValues = execute(pixels, width);
+		double[] medianValues = execute(pixelsDouble, width);
 		for (int i=0; i<height; i++) {
-			resultPixels[i*resultWidth+(currentSlice-1)] = medianValues[i];
+			resultPixels[i*resultWidth+(currentSlice-1)] = (float)medianValues[i];
 		}
     }
-
-	/**
-	 * Returns an array representing the median value of each record in
-	 * {@code waveforms}, where each record has {@code recordLength} elements.
-	 * Output is null if {@code waveforms==null}, {@code recordLength<=0},
-	 * {@code waveforms.length<recordLength}, or if {@code waveforms.length} is
-	 * not evenly divisible by {@code recordLength}.
-	 *
-	 * @param waveforms    one-dimensional array composed of a series of
-	 *                     concatenated records, each of size equal to
-	 *                     {@code recordLength}
-	 * @param recordLength size of each record in {@code waveforms}
-	 * @return array of median values of input waveforms
-	 */
-	public static float[] execute(float[] waveforms, int recordLength)
-	{
-		if (waveforms != null && recordLength > 0 && waveforms.length >= recordLength && waveforms.length%recordLength == 0) {
-			
-			// compute number of records
-			int numRecords = waveforms.length/recordLength;
-			
-			// allocate output array
-			float[] medianValues = new float[numRecords];
-			
-			// loop over all records
-			for (int i=0; i<numRecords; i++) {
-				
-				// compute row offset
-				int offset = i*recordLength;
-				
-				// find median of current waveform
-				medianValues[i] = WaveformUtils.median(waveforms, offset, offset+recordLength);
-
-			}
-			
-			return medianValues;
-				
-		}
-		
-		return null;
-	}
 	
 	/**
 	 * Returns an array representing the median value of each record in

@@ -21,28 +21,6 @@ public class SkewnessTest
 	 * Test of execute method, of class Skewness.
 	 */
 	@Test
-	public void testExecute_floatArr_int()
-	{
-		System.out.println("Test of Skewness.execute(float[], int)");
-		float[] waveforms = new float[] {1.0f, 5.0f, 2.0f, 3.0f, 2.2f, -1.0f, 4.0f, 5.0f, 0.0f, 0.0f, 3.2f, -0.5f, 1.1f, 2.2f, 1.1f, 4.0f};
-		int recordLength = 8;
-		boolean isSampleSkewness = false;
-		float[] expResult = new float[] {-0.5465406598681920f, 0.5478861364760020f};
-		float[] result = Skewness.execute(waveforms, recordLength, isSampleSkewness);
-		assertArrayEquals(expResult, result, Math.ulp(1.0f));
-		
-		waveforms = new float[] {1.0f, 5.0f, 2.0f, 3.0f, 2.2f, -1.0f, 4.0f, 5.0f, 0.0f, 0.0f, 3.2f, -0.5f, 1.1f, 2.2f, 1.1f, 4.0f};
-		recordLength = 8;
-		isSampleSkewness = true;
-		expResult = new float[] {-0.43820740653602647f, 0.4392861877835291f};
-		result = Skewness.execute(waveforms, recordLength, isSampleSkewness);
-		assertArrayEquals(expResult, result, Math.ulp(1.0f));
-	}
-
-	/**
-	 * Test of execute method, of class Skewness.
-	 */
-	@Test
 	public void testExecute_doubleArr_int()
 	{
 		System.out.println("Test of Skewness.execute(double[], int)");

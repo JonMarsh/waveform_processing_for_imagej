@@ -5,6 +5,7 @@ import ij.ImagePlus;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 
 /**
  * Computes the maximum value of each input waveform and returns the result in a
@@ -71,61 +72,13 @@ public class MaximumValue implements ExtendedPlugInFilter
     {
         int currentSlice = pfr.getSliceNumber();
         float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
-		float[] maxValues = execute(pixels, width);
+		double[] maxValues = execute(pixelsDouble, width);
 		for (int i=0; i<height; i++) {
-			resultPixels[i*resultWidth+(currentSlice-1)] = maxValues[i];
+			resultPixels[i*resultWidth+(currentSlice-1)] = (float)maxValues[i];
 		}
     }
-
-	/**
-	 * Returns an array representing the maximum values of each record in
-	 * {@code waveforms}, where each record {@code recordLength} elements.
-	 * Output is null if {@code waveforms==null}, {@code recordLength<=0},
-	 * {@code waveforms.length<recordLength}, or if {@code waveforms.length} is
-	 * not evenly divisible by {@code recordLength}.
-	 *
-	 * @param waveforms    one-dimensional array composed of a series of
-	 *                     concatenated records, each of size equal to
-	 *                     {@code recordLength}
-	 * @param recordLength size of each record in {@code waveforms}
-	 * @return array of maximum values of input waveforms
-	 */
-	public static float[] execute(float[] waveforms, int recordLength)
-	{
-		if (waveforms != null && recordLength > 0 && waveforms.length >= recordLength && waveforms.length%recordLength == 0) {
-			
-			// compute number of records
-			int numRecords = waveforms.length/recordLength;
-			
-			// allocate output array
-			float[] maxValues = new float[numRecords];
-			
-			// loop over all records
-			for (int i=0; i<numRecords; i++) {
-				
-				// compute row offset
-				int offset = i*recordLength;
-				
-				// find minimum of current waveform
-				float currentValue = waveforms[offset];
-				float max = currentValue;
-				for (int j=1; j<recordLength; j++) {
-					currentValue = waveforms[offset+j];
-					if (currentValue > max) {
-						max = currentValue;
-					}
-				}
-				maxValues[i] = max;
-
-			}
-			
-			return maxValues;
-				
-		}
-		
-		return null;
-	}
 	
 	/**
 	 * Returns an array representing the maximum values of each record in

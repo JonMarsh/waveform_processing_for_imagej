@@ -18,8 +18,8 @@ import java.util.Arrays;
  * power spectrum within the specified frequency range at that index. The input
  * data are overwritten by the new computed values. The length of the moving
  * window is equal to {@code 2*radius+1}. A plain DFT is used here since the
- * window lengths and integration ranges are usually quite short, and we can use
- * a lookup table for the sine & cosine values.
+ * window lengths and integration ranges are typically quite short, and we can
+ * use a lookup table for the sine & cosine values.
  * <p>
  * @author Jon N. Marsh
  */

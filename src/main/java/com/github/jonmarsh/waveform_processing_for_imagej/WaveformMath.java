@@ -8,6 +8,7 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 import java.awt.AWTEvent;
 import java.util.ArrayList;
 
@@ -91,123 +92,13 @@ public class WaveformMath implements ExtendedPlugInFilter, DialogListener
 	@Override
 	public void run(ImageProcessor ip)
 	{
-		float[] pixels = (float[]) ip.getPixels();
+		float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
-		execute(pixels, waveform, operationChoice);
-	}
-
-	/**
-	 * Performs the specified element-by-element operation on every record in
-	 * {@code waveforms} with the single record {@code waveform}.
-	 * {@code waveforms} is a one-dimensional array composed of a series of
-	 * concatenated records, each of length equal to {@code waveform.length}.
-	 * The operation is carried out on {@code waveforms} in place. No action is
-	 * performed if either {@code waveforms} or {@code waveform} is
-	 * {@code null}, or if {@code waveforms.length<waveform.length}, or if the
-	 * length of {@code waveforms} is not evenly divisible by
-	 * {@code waveform.length}
-	 *
-	 * @param waveforms array of concatenated waveforms, assumed to be of length
-	 *                  {@code waveform.length}
-	 * @param waveform	 single waveform with which to perform desired operation
-	 * @param operation {@code ADD} adds {@code waveform} to every record in
-	 *                  {@code waveforms} on an element-by-element basis;
-	 *                  {@code SUBTRACT} subtracts {@code waveform} from every
-	 *                  record in {@code waveforms} on an element-by-element
-	 *                  basis; {@code MULTIPLY} multiplies {@code waveform} with
-	 *                  every record in {@code waveforms} on an
-	 *                  element-by-element basis; {@code DIVIDE} divides each
-	 *                  record in {@code waveforms} by {@code waveform} on an
-	 *                  element-by-element basis
-	 */
-	public static final void execute(float[] waveforms, float[] waveform, int operation)
-	{
-		if (waveforms != null && waveform != null) {
-
-			int recordLength = waveform.length;
-
-			if (recordLength > 0) {
-
-				if (waveforms.length % recordLength == 0 && waveforms.length >= recordLength) {
-
-					// compute number of records
-					int numRecords = waveforms.length / recordLength;
-
-					int offset;
-
-					switch (operation) {
-
-						case ADD: {
-							// peform computations on a row-by-row basis
-							for (int i = 0; i < numRecords; i++) {
-
-								// offset to current record
-								offset = i * recordLength;
-
-								// perform operation in place
-								for (int j = 0; j < recordLength; j++) {
-									waveforms[offset + j] += waveform[j];
-								}
-
-							}
-							break;
-						}
-
-						case SUBTRACT: {
-							// peform computations on a row-by-row basis
-							for (int i = 0; i < numRecords; i++) {
-
-								// offset to current record
-								offset = i * recordLength;
-
-								// perform operation in place
-								for (int j = 0; j < recordLength; j++) {
-									waveforms[offset + j] -= waveform[j];
-								}
-
-							}
-							break;
-						}
-
-						case MULTIPLY: {
-							// peform computations on a row-by-row basis
-							for (int i = 0; i < numRecords; i++) {
-
-								// offset to current record
-								offset = i * recordLength;
-
-								// perform operation in place
-								for (int j = 0; j < recordLength; j++) {
-									waveforms[offset + j] *= waveform[j];
-								}
-
-							}
-							break;
-						}
-
-						case DIVIDE: {
-							// peform computations on a row-by-row basis
-							for (int i = 0; i < numRecords; i++) {
-
-								// offset to current record
-								offset = i * recordLength;
-
-								// perform operation in place
-								for (int j = 0; j < recordLength; j++) {
-									waveforms[offset + j] /= waveform[j];
-								}
-
-							}
-							break;
-						}
-
-						default: {
-							break;
-						}
-
-					}
-				}
-			}
+		execute(pixelsDouble, Tools.toDouble(waveform), operationChoice);
+		
+		for (int i=0; i<pixels.length; i++) {
+			pixels[i] = (float)pixelsDouble[i];
 		}
 	}
 

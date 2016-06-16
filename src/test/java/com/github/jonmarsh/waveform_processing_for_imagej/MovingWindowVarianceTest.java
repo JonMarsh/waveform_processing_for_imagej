@@ -18,42 +18,9 @@ public class MovingWindowVarianceTest
 	 * Test of execute method, of class MovingWindowVariance.
 	 */
 	@Test
-	public void testExecute_4args_1()
-	{
-		System.out.println("Test of MovingWindowVariance.execute(float[], int, int, boolean)");
-		float[] waveforms = new float[]{1.0f, 5.0f, 2.0f, 3.0f, 2.2f, -1.0f, 4.0f, 5.0f, 0.0f, 0.0f, 3.2f, -0.5f, 1.1f, 2.2f, 1.1f, 4.0f};
-		int recordLength = 16;
-		int radius = 2;
-		boolean useUnbiasedEstimateOfVariance = true;
-		float[] expResult = new float[]{3.5f, 3.2f, 2.248f, 4.688f, 3.508f, 5.248f, 6.508f, 7.3f, 5.368f, 5.908f, 2.203f, 2.335f, 1.917f, 2.757f, 1.605f, 1.407f};
-		MovingWindowVariance.execute(waveforms, recordLength, radius, useUnbiasedEstimateOfVariance);
-		assertArrayEquals(expResult, waveforms, Math.ulp(10.0f));
-
-		waveforms = new float[]{1.0f, 5.0f, 2.0f, 3.0f, 2.2f, -1.0f, 4.0f, 5.0f, 0.0f, 0.0f, 3.2f, -0.5f, 1.1f, 2.2f, 1.1f, 4.0f};
-		recordLength = 16;
-		radius = 2;
-		useUnbiasedEstimateOfVariance = false;
-		expResult = new float[]{2.8f, 2.56f, 1.7984f, 3.7504f, 2.8064f, 4.1984f, 5.2064f, 5.84f, 4.2944f, 4.7264f, 1.7624f, 1.868f, 1.5336f, 2.2056f, 1.284f, 1.1256f};
-		MovingWindowVariance.execute(waveforms, recordLength, radius, useUnbiasedEstimateOfVariance);
-		assertArrayEquals(expResult, waveforms, Math.ulp(10.0f));
-
-		waveforms = new float[]{1.0f, 5.0f, 2.0f, 3.0f, 2.2f, -1.0f, 4.0f, 5.0f, 0.0f, 0.0f, 3.2f, -0.5f, 1.1f, 2.2f, 1.1f, 4.0f};
-		recordLength = 8;
-		radius = 2;
-		useUnbiasedEstimateOfVariance = false;
-		expResult = new float[]{2.8f, 2.56f, 1.7984f, 3.7504f, 2.8064f, 4.1984f, 4.5024f, 6.96f, 2.4576f, 1.8064f, 1.7624f, 1.868f, 1.5336f, 2.2056f, 1.284f, 1.1256f};
-		MovingWindowVariance.execute(waveforms, recordLength, radius, useUnbiasedEstimateOfVariance);
-		assertArrayEquals(expResult, waveforms, Math.ulp(10.0f));
-
-	}
-
-	/**
-	 * Test of execute method, of class MovingWindowVariance.
-	 */
-	@Test
 	public void testExecute_4args_2()
 	{
-		System.out.println("Test of MovingWindowVariance.execute(double[], int, int, boolean)");
+		System.out.println("Test of MovingWindowVariance.execute()");
 		double[] waveforms = new double[]{1.0, 5.0, 2.0, 3.0, 2.2, -1.0, 4.0, 5.0, 0.0, 0.0, 3.2, -0.5, 1.1, 2.2, 1.1, 4.0};
 		int recordLength = 16;
 		int radius = 2;

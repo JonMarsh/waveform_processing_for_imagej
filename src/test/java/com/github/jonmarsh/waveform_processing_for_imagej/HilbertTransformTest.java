@@ -58,28 +58,6 @@ public class HilbertTransformTest
 	 * Test of execute method, of class HilbertTransform.
 	 */
 	@Test
-	public void testExecute_3args_1()
-	{
-		System.out.println("Test of HilbertTransform.execute(float[], boolean, int)");		
-		float[] waveforms = new float[]{1, 2, 3, 2, -3, -1, 0, 1};
-		boolean isForward = true;
-		int recordLength = 8;
-		HilbertTransform.execute(waveforms, isForward, recordLength);
-		float[] expResult = new float[]{-0.914213562373094923f, -0.896446609406726047f, 0.207106781186547351f, 3.724873734152915890f, 1.914213562373094920f, -1.603553390593273730f, -1.207106781186547460f, -1.224873734152916340f};
-		assertArrayEquals(expResult, waveforms, 0);
-
-		waveforms = new float[]{1, 2, 3, 2, -3, -1, 0, 1};
-		isForward = false;
-		recordLength = 8;
-		HilbertTransform.execute(waveforms, isForward, recordLength);
-		expResult = new float[]{0.914213562373094923f, 0.896446609406726047f, -0.207106781186547351f, -3.724873734152915890f, -1.914213562373094920f, 1.603553390593273730f, 1.207106781186547460f, 1.224873734152916340f};
-		assertArrayEquals(expResult, waveforms, 0);
-	}
-
-	/**
-	 * Test of execute method, of class HilbertTransform.
-	 */
-	@Test
 	public void testExecute_3args_2()
 	{
 		System.out.println("Test of HilbertTransform.execute(double[], boolean, int)");		

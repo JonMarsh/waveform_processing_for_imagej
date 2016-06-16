@@ -18,6 +18,7 @@ import java.awt.Polygon;
 import java.awt.TextField;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * This plug-in filter is used to auto-detect borders in a B-scan for the
@@ -96,7 +97,7 @@ public class GateBScanInteractively implements ExtendedPlugInFilter, DialogListe
 		pixels = (float[])processor.getPixelsCopy();
 		reversedPixels = Arrays.copyOf(pixels, pixels.length);
 		for (int i = 0; i < numberOfRecords; i++) {
-			WaveformUtils.reverseArrayInPlace(reversedPixels, i * recordLength, (i + 1) * recordLength);
+			ArrayUtils.reverse(reversedPixels, i * recordLength, (i + 1) * recordLength);
 		}
 		gatePositions = new int[numberOfRecords];
 		suitableImageTitles = getMatchingImages();

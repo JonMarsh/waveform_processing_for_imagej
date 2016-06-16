@@ -6,6 +6,7 @@ import ij.ImageStack;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 
 /**
  * Computes the mean waveform from a set of input waveforms.  Each row in the 
@@ -68,49 +69,17 @@ public class AverageWaveforms implements ExtendedPlugInFilter
 		
 		// get pixel array reference for current input data
 		float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
 		// do averaging
-		float[] avg = execute(pixels, width);
+		double[] avg = execute(pixelsDouble, width);
 		
 		// copy average waveform into output pixel array
-		System.arraycopy(avg, 0, avgPixels, 0, width);
+		for (int i=0; i<width; i++) {
+			avgPixels[i] = (float)avg[i];
+		}
 	}
 	
-	/**
-	 * Returns a single array of size {@code recordLength} that is the element-by-element
-	 * average of each record in {@code waveforms}.  {@code waveforms} is a one-dimensional
-	 * array composed of a series of concatenated waveforms, each of size {@code recordLength}.
-	 * 
-	 * @param waveforms		array of concatenated waveforms, assumed to of length {@code recordLength}
-	 * @param recordLength	size of each record in {@code waveforms}
-	 * @return				array of size {@code recordLength} that represents the 
-	 *						element-by-element average of each record in {@code waveforms}
-	 *						(null if {@code waveforms==null}, {@code recordLength>waveforms.length}, or {@code recordLength<=0})
-	 */
-	public static float[] execute(float[] waveforms, int recordLength)
-	{
-		if (waveforms == null || recordLength > waveforms.length || recordLength <= 0) {
-			return null;
-		}
-		
-		float[] avgWaveform = new float[recordLength];
-		int numRecords = waveforms.length/recordLength;
-		
-		// loop over elements in output average waveform
-		for (int i=0; i<recordLength; i++) {
-			
-			double sum = 0.0f;
-			
-			// loop over all input waveform values at index i
-			for (int j=0; j<numRecords; j++) {
-				sum += waveforms[j*recordLength+i];
-			}
-			avgWaveform[i] = (float)(sum/numRecords);
-		}
-		
-		return avgWaveform;
-	}
-
 	/**
 	 * Returns a single array of size {@code recordLength} that is the element-by-element
 	 * average of each record in {@code waveforms}.  {@code waveforms} is a one-dimensional

@@ -8,6 +8,7 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 import java.awt.AWTEvent;
 import java.util.ArrayList;
 
@@ -139,8 +140,9 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 	{
 		int currentSlice = pfr.getSliceNumber();
 		float[] pixels = (float[]) ip.getPixels();	// CONVERT_TO_FLOAT flag is set, so this always works
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
-		SignalExtrema[] results = execute(pixels, width, interpolationChoice);
+		SignalExtrema[] results = execute(pixelsDouble, width, interpolationChoice);
 
 		if (outputMaximaPositions) {
 			float[] maxPositionPixels = (float[])(maxPositionStack.getProcessor(currentSlice).getPixels());
@@ -183,106 +185,6 @@ public class WaveformExtrema implements ExtendedPlugInFilter, DialogListener
 			}
 		}
 
-	}
-
-	/**
-	 * Computes the positions and values of extrema (both maxima and minima) in
-	 * each record in {@code waveforms}, where each record has
-	 * {@code recordLength} elements.
-	 *
-	 * @param waveforms           one-dimensional array composed of a series of
-	 *                            concatenated records, each of size equal to
-	 *                            {@code recordLength}
-	 * @param recordLength        size of each record in {@code waveforms}
-	 * @param interpolationMethod {@link #NONE} for no interpolation or
-	 *                            {@link #CUBIC_SPLINE} for natural cubic spline
-	 *                            interpolation between points in a waveform
-	 * @return array of {@link #SignalExtrema} objects that contain extrema
-	 *         positions and values. Each element of this array corresponds to
-	 *         the local extrema in the corresponding record in
-	 *         {@code waveforms}. Output is null if {@code waveforms==null},
-	 *         {@code recordLength<=3}, {@code waveforms.length<recordLength},
-	 *         or if {@code waveforms.length} is not evenly divisible by
-	 *         {@code recordLength}.
-	 */
-	public static SignalExtrema[] execute(float[] waveforms, int recordLength, int interpolationMethod)
-	{
-		if (waveforms != null && recordLength > 3 && waveforms.length >= recordLength && waveforms.length % recordLength == 0) {
-
-			// compute number of records
-			int numRecords = waveforms.length / recordLength;
-
-			// allocate output array of extrema data
-			SignalExtrema[] extrema = new SignalExtrema[numRecords];
-
-			// loop over all records
-			for (int i = 0; i < numRecords; i++) {
-
-				// compute row offset
-				int offset = i * recordLength;
-
-				// initialize lists to hold extrema data
-				ArrayList<WaveformPoint> maximaList = new ArrayList<>();
-				ArrayList<WaveformPoint> minimaList = new ArrayList<>();
-
-				switch (interpolationMethod) {
-
-					case NONE: {
-						double yl = waveforms[offset];
-						double ym = waveforms[offset + 1];
-						for (int j = 1; j < recordLength - 1; j++) {
-							double yr = waveforms[offset + j + 1];
-							if (yl < ym && yr <= ym) {
-								maximaList.add(new WaveformPoint(j, 0.0, ym));
-							} else if (yl > ym && yr >= ym) {
-								minimaList.add(new WaveformPoint(j, 0.0, ym));
-							}
-							yl = ym;
-							ym = yr;
-						}
-						break;
-					}
-
-					case CUBIC_SPLINE: {
-						// get spline coefficients for this waveform
-						double[][] splineCoeffs = WaveformUtils.cubicSplineInterpolantUniformSpacing(waveforms, offset, offset + recordLength, 1.0);
-						// loop over intervals between knots
-						for (int j = 0; j < recordLength - 1; j++) {
-							// determine roots of derivative in this interval
-							double[] r = WaveformUtils.quadraticRoots(3.0 * splineCoeffs[3][j], 2.0 * splineCoeffs[2][j], splineCoeffs[1][j]);
-							if (r.length > 0) {
-								for (int k = 0; k < r.length; k++) {
-									// make sure root lies within this interval
-									if (r[k] >= 0 && j + r[k] < j + 1) {
-										// determine curvature of function
-										double curvature = 2.0 * splineCoeffs[2][j] + r[k] * 6.0 * splineCoeffs[3][j];
-										if (curvature < 0.0) {
-											maximaList.add(new WaveformPoint(j, r[k], splineCoeffs[0][j] + r[k] * (splineCoeffs[1][j] + r[k] * (splineCoeffs[2][j] + r[k] * splineCoeffs[3][j]))));
-										} else {
-											minimaList.add(new WaveformPoint(j, r[k], splineCoeffs[0][j] + r[k] * (splineCoeffs[1][j] + r[k] * (splineCoeffs[2][j] + r[k] * splineCoeffs[3][j]))));
-										}
-									}
-								}
-							}
-						}
-						break;
-					}
-
-					default: {
-						break;
-					}
-
-				}
-
-				extrema[i] = new SignalExtrema(maximaList, minimaList);
-
-			}
-
-			return extrema;
-
-		}
-
-		return null;
 	}
 
 	/**

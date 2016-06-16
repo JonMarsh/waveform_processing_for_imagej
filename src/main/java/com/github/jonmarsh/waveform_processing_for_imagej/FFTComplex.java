@@ -9,8 +9,12 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 import java.awt.AWTEvent;
 import java.util.ArrayList;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
 
 /**
  * This plug-in filter computes the real and imaginary part of the FFT (or its 
@@ -139,103 +143,34 @@ public class FFTComplex implements ExtendedPlugInFilter, DialogListener
     public void run(ImageProcessor ip) 
     {
         int currentSlice = pfr.getSliceNumber();
-		float[] pixelsRealInput;
-		float[] pixelsImagInput;
+		double[] pixelsRealInput;
+		double[] pixelsImagInput;
 		float[] pixelsRealOutput = (float[])(stackRealOutput.getProcessor(currentSlice).getPixels());
 		float[] pixelsImagOutput = (float[])(stackImagOutput.getProcessor(currentSlice).getPixels());
 
 		if (inputImageIsReal) {
-			pixelsRealInput = (float[])ip.getPixels();
+			pixelsRealInput = Tools.toDouble((float[])ip.getPixels());
 			if (hasImag) {
-				pixelsImagInput = (float[])(stackImagInput.getProcessor(currentSlice).getPixels());
+				pixelsImagInput = Tools.toDouble((float[])(stackImagInput.getProcessor(currentSlice).getPixels()));
 			} else {
-				pixelsImagInput = new float[pixelsRealInput.length];
+				pixelsImagInput = new double[pixelsRealInput.length];
 			}
 		} else {
-			pixelsImagInput = (float[])ip.getPixels();
+			pixelsImagInput = Tools.toDouble((float[])ip.getPixels());
 			if (hasReal) {
-				pixelsRealInput = (float[])(stackRealInput.getProcessor(currentSlice).getPixels());
+				pixelsRealInput = Tools.toDouble((float[])(stackRealInput.getProcessor(currentSlice).getPixels()));
 			} else {
-				pixelsRealInput = new float[pixelsImagInput.length];
+				pixelsRealInput = new double[pixelsImagInput.length];
 			}
 		}
 		
-		float[][] transform = execute(pixelsRealInput, pixelsImagInput, isForward, width);
+		double[][] transform = execute(pixelsRealInput, pixelsImagInput, isForward, width);
 		
-		System.arraycopy(transform[0], 0, pixelsRealOutput, 0, newWidth*height);
-		System.arraycopy(transform[1], 0, pixelsImagOutput, 0, newWidth*height);
+		for (int i=0; i<newWidth*height; i++) {
+			pixelsRealOutput[i] = (float)transform[0][i];
+			pixelsImagOutput[i] = (float)transform[1][i];
+		}
     }
-
-	/**
-	 * Computes FFT of all complex waveforms represented in {@code realWaveforms}
-	 * and {@code imagWaveforms}, where each record is of size {@code recordLength} 
-	 * (which does not have to be a power of 2).  Input records are zero-padded to 
-	 * the next highest power of two if {@code recordLength} is not already a 
-	 * power of 2. A forward FFT is performed if {@code isForward} is {@code true} 
-	 * (inverse if {@code false}).  The output is returned as a two-dimensional 
-	 * array, where the first element comprises the concatenated padded real 
-	 * part of the transforms, and the second element is the corresponding
-	 * concatenated padded imaginary part of the transforms.  Input arrays are 
-	 * left unchanged.  For efficiency, no error checking is performed on array 
-	 * dimensions; runtime errors may occur for invalid inputs.
-	 * 
-	 * @param realWaveforms	one-dimensional array composed of a series of 
-	 *						concatenated records, each of size equal to {@code recordLength},
-	 *						representing the real part of the input signals
-	 * @param imagWaveforms	one-dimensional array composed of a series of 
-	 *						concatenated records, each of size equal to {@code recordLength},
-	 *						representing the imaginary part of the input signals
-	 * @param isForward		{@code true} for forward transform, {@code false} for inverse
-	 * @param recordLength	size of each record in {@code realWaveforms} and {@code imagWaveforms} 
-	 *						(does not have to be a power of 2)
-	 * @return				two-dimensional array of size {@code 2*numberOfRecords*paddedRecordLength}, 
-	 *						whose first element comprises the concatenated padded 
-	 *						real part of the transforms, and whose second element
-	 *						comprises the concatenated padded imaginary part of the transforms
-	 *						
-	 */
-	public static float[][] execute(float[] realWaveforms, float[] imagWaveforms, boolean isForward, int recordLength)
-	{
-		// compute number of records
-		int numRecords = realWaveforms.length/recordLength;
-		
-		// compute padded record length
-		int paddedRecordLength = recordLength + WaveformUtils.amountToPadToNextPowerOf2(recordLength);
-		
-		// initialize output array
-		float[][] output = new float[2][paddedRecordLength*numRecords];
-		
-		for (int i=0; i<numRecords; i++) {
-			
-			// compute offsets for input and output arrays
-			int offset1 = i*recordLength;
-			int offset2 = i*paddedRecordLength;
-			
-			// initialize temporary real and imaginary waveforms
-			double[] ar = new double[paddedRecordLength];
-			double[] ai = new double[paddedRecordLength];
-
-			// copy values into current temporary real and imaginary waveforms
-			for (int j=0; j<recordLength; j++) {
-				ar[j] = realWaveforms[offset1+j];
-				ai[j] = imagWaveforms[offset1+j];
-			}
-			
-			// perform FFT
-			WaveformUtils.fftComplexPowerOf2(ar, ai, isForward);
-			
-			// write values into output array
-			for (int j=0; j<paddedRecordLength; j++) {
-				output[0][offset2+j] = (float)ar[j];
-			}
-			for (int j=0; j<paddedRecordLength; j++) {
-				output[1][offset2+j] = (float)ai[j];
-			}
-			
-		}
-
-		return output;
-	}
 
 	/**
 	 * Computes FFT of all complex waveforms represented in {@code realWaveforms}
@@ -291,7 +226,7 @@ public class FFTComplex implements ExtendedPlugInFilter, DialogListener
 			System.arraycopy(imagWaveforms, offset1, ai, 0, recordLength);
 			
 			// perform FFT
-			WaveformUtils.fftComplexPowerOf2(ar, ai, isForward);
+			FastFourierTransformer.transformInPlace(new double[][]{ar, ai}, DftNormalization.STANDARD, isForward ? TransformType.FORWARD : TransformType.INVERSE);
 			
 			// write values into output array
 			System.arraycopy(ar, 0, output[0], offset2, paddedRecordLength);

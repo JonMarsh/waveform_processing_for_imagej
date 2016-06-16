@@ -22,6 +22,7 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
+import ij.util.Tools;
 import java.awt.AWTEvent;
 
 /**
@@ -87,50 +88,13 @@ public class HilbertTransform implements ExtendedPlugInFilter, DialogListener
 	{
 		// get pixel values of current processor
 		float[] pixels = (float[])ip.getPixels();
+		double[] pixelsDouble = Tools.toDouble(pixels);
 
 		// compute envelopes
-		execute(pixels, isForward, width);
-	}
-
-	/**
-	 * Computes Hilbert transform of input waveforms, assumed to be of length
-	 * {@code recordLength} and concatenated and stored in one-dimensional input
-	 * array {@code waveforms}. Each waveform is zero-padded to the next largest
-	 * power of 2 if necessary in order to make use of FFTs for efficiency, and
-	 * the final output is truncated to the original length. Results are
-	 * computed in place. For efficiency, no error checking is performed on
-	 * validity of inputs.
-	 * <p>
-	 * @param waveforms    input
-	 * @param isForward    {@code true} for forward transform,
-	 *                     {@code false for inverse}
-	 * @param recordLength length of each waveform in points
-	 */
-	public static final void execute(float[] waveforms, boolean isForward, int recordLength)
-	{
-		int numberOfRecords = waveforms.length / recordLength;
-
-		int paddedWidth = recordLength + WaveformUtils.amountToPadToNextPowerOf2(recordLength);
-
-		// perform computations on row-by-row basis
-		for (int i = 0; i < numberOfRecords; i++) {
-
-			// compute row offset 
-			int offset = i * recordLength;
-
-			// initialize temporary padded array copy
-			double[] waveformCopy = new double[paddedWidth];
-			for (int j = 0; j < recordLength; j++) {
-				waveformCopy[j] = waveforms[offset + j];
-			}
-
-			// compute Hilbert transform
-			WaveformUtils.fastHilbertTransformPowerOf2(waveformCopy, isForward);
-
-			// copy transform into original waveform array, truncating at original width
-			for (int j = 0; j < recordLength; j++) {
-				waveforms[offset + j] = (float)waveformCopy[j];
-			}
+		execute(pixelsDouble, isForward, width);
+		
+		for (int i=0; i<pixels.length; i++) {
+			pixels[i] = (float)pixelsDouble[i];
 		}
 	}
 
